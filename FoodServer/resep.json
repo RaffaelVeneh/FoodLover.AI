@@ -44,5 +44,216 @@
       "telur",
       "bawang"
     ]
+  },
+  {
+    "nama": "Sayur Asem Segar",
+    "rasa": "Asam",
+    "bahan": [
+      "melinjo",
+      "labu siam",
+      "kacang panjang",
+      "asem jawa"
+    ]
+  },
+  {
+    "nama": "Sate Ayam Madura",
+    "rasa": "Gurih",
+    "bahan": [
+      "ayam",
+      "kecap",
+      "kacang",
+      "bawang"
+    ]
+  },
+  {
+    "nama": "Gado-Gado Betawi",
+    "rasa": "Gurih",
+    "bahan": [
+      "sayuran",
+      "lontong",
+      "telur",
+      "kacang"
+    ]
+  },
+  {
+    "nama": "Sambal Terasi Mantap",
+    "rasa": "Pedas",
+    "bahan": [
+      "cabai",
+      "tomat",
+      "terasi",
+      "garam"
+    ]
+  },
+  {
+    "nama": "Kolak Pisang Ubi",
+    "rasa": "Manis",
+    "bahan": [
+      "pisang",
+      "ubi",
+      "gula merah",
+      "santan"
+    ]
+  },
+  {
+    "nama": "Soto Ayam Bening",
+    "rasa": "Gurih",
+    "bahan": [
+      "ayam",
+      "soun",
+      "kentang",
+      "bumbu soto"
+    ]
+  },
+  {
+    "nama": "Rendang Sapi Padang",
+    "rasa": "Gurih",
+    "bahan": [
+      "daging sapi",
+      "santan",
+      "cabai",
+      "rempah-rempah"
+    ]
+  },
+  {
+    "nama": "Pepes Ikan Mas",
+    "rasa": "Gurih",
+    "bahan": [
+      "ikan mas",
+      "daun kemangi",
+      "bumbu kuning",
+      "daun pisang"
+    ]
+  },
+  {
+    "nama": "Tempe Mendoan",
+    "rasa": "Gurih",
+    "bahan": [
+      "tempe",
+      "tepung",
+      "daun bawang",
+      "ketumbar"
+    ]
+  },
+  {
+    "nama": "Klepon Gula Merah",
+    "rasa": "Manis",
+    "bahan": [
+      "tepung ketan",
+      "gula merah",
+      "kelapa parut",
+      "pandan"
+    ]
+  },
+  {
+    "nama": "Pecel Lele Sambal",
+    "rasa": "Pedas",
+    "bahan": [
+      "ikan lele",
+      "sambal terasi",
+      "timun",
+      "kemangi"
+    ]
+  },
+  {
+    "nama": "Cumi Saus Padang",
+    "rasa": "Pedas",
+    "bahan": [
+      "cumi-cumi",
+      "saus tomat",
+      "cabai",
+      "bawang bombay"
+    ]
+  },
+  {
+    "nama": "Lumpia Semarang",
+    "rasa": "Gurih",
+    "bahan": [
+      "rebung",
+      "udang",
+      "telur",
+      "kulit lumpia"
+    ]
+  },
+  {
+    "nama": "Serabi Kuah Kinca",
+    "rasa": "Manis",
+    "bahan": [
+      "tepung beras",
+      "santan",
+      "gula merah",
+      "garam"
+    ]
+  },
+  {
+    "nama": "Rawon Setan Surabaya",
+    "rasa": "Gurih",
+    "bahan": [
+      "daging sapi",
+      "kluwek",
+      "tauge",
+      "daun bawang"
+    ]
+  },
+  {
+    "nama": "Kue Cubit Cokelat Keju",
+    "rasa": "Manis",
+    "bahan": [
+      "tepung terigu",
+      "telur",
+      "gula",
+      "cokelat meses",
+      "keju"
+    ]
+  },
+  {
+    "nama": "Seblak Jeletot",
+    "rasa": "Pedas",
+    "bahan": [
+      "kerupuk basah",
+      "cabai rawit",
+      "telur",
+      "kencur"
+    ]
+  },
+  {
+    "nama": "Pempek Kapal Selam",
+    "rasa": "Gurih",
+    "bahan": [
+      "ikan tenggiri",
+      "sagu",
+      "telur utuh",
+      "cuko"
+    ]
+  },
+  {
+    "nama": "Bika Ambon",
+    "rasa": "Manis",
+    "bahan": [
+      "tepung tapioka",
+      "santan",
+      "gula",
+      "telur"
+    ]
+  },
+  {
+    "nama": "Oseng Mercon Daging",
+    "rasa": "Pedas",
+    "bahan": [
+      "daging sapi",
+      "cabai rawit",
+      "bawang",
+      "jahe"
+    ]
+  },
+  {
+    "nama": "Martabak Telur Spesial",
+    "rasa": "Gurih",
+    "bahan": [
+      "kulit martabak",
+      "telur bebek",
+      "daging cincang",
+      "daun bawang"
+    ]
   }
 ]
