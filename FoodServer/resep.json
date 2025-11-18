@@ -1,0 +1,48 @@
+[
+  {
+    "nama": "Nasi Goreng Pedas",
+    "rasa": "Pedas",
+    "bahan": [
+      "nasi",
+      "telur",
+      "kecap",
+      "cabai"
+    ]
+  },
+  {
+    "nama": "Telur Dadar Gurih",
+    "rasa": "Gurih",
+    "bahan": [
+      "telur",
+      "garam",
+      "daun bawang"
+    ]
+  },
+  {
+    "nama": "Pisang Goreng Manis",
+    "rasa": "Manis",
+    "bahan": [
+      "pisang",
+      "tepung",
+      "gula"
+    ]
+  },
+  {
+    "nama": "Ayam Rica-Rica",
+    "rasa": "Pedas",
+    "bahan": [
+      "ayam",
+      "cabai",
+      "bawang"
+    ]
+  },
+  {
+    "nama": "Mie Goreng Spesial",
+    "rasa": "Gurih",
+    "bahan": [
+      "mie",
+      "telur",
+      "bawang"
+    ]
+  }
+]

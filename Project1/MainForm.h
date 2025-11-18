@@ -2,6 +2,8 @@
 #include "DataModels.h"
 #include "FeedbackForm.h"
 using namespace System::IO;
+using namespace System::Net;
+using namespace System::Text;
 
 namespace FoodLover {
 
@@ -29,6 +31,8 @@ namespace FoodLover {
 			//
 			InisialisasiDatabase();
 			MuatFeedbackDariFile();
+
+			this->comboRasa->SelectedIndex = 0;
 		}
 
 	protected:
@@ -183,7 +187,7 @@ namespace FoodLover {
 			// comboRasa
 			// 
 			this->comboRasa->FormattingEnabled = true;
-			this->comboRasa->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"Pedas", L"Manis", L"Gurih" });
+			this->comboRasa->Items->AddRange(gcnew cli::array< System::Object^  >(4) { L"Semua", L"Pedas", L"Manis", L"Gurih" });
 			this->comboRasa->Location = System::Drawing::Point(15, 234);
 			this->comboRasa->Name = L"comboRasa";
 			this->comboRasa->Size = System::Drawing::Size(121, 21);
@@ -258,68 +262,100 @@ namespace FoodLover {
 	}
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	}
-private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
+	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
 
-	// 1. AMBIL & BERSIHKAN INPUT
-	String^ rasaInput = this->comboRasa->Text;
-	String^ bahanInput = this->txtBahan->Text;
-	this->listHasil->Items->Clear();
+		// 1. AMBIL INPUT
+		String^ rasaInput = this->comboRasa->Text;
+		String^ bahanMentah = this->txtBahan->Text;
+		this->listHasil->Items->Clear();
 
-	// Validasi: Pastikan pengguna memilih rasa
-	if (String::IsNullOrEmpty(rasaInput)) {
-		this->listHasil->Items->Add("Silakan pilih preferensi rasa terlebih dahulu.");
-		return;
-	}
+		if (String::IsNullOrEmpty(rasaInput)) return;
 
-	// 2. PROSES INPUT BAHAN PENGGUNA
-	array<Char>^ delimiters = { ',', '.', '\r', '\n', ' ' };
+		String^ bahanAman = bahanMentah
+			->Replace("\r\n", " ")  // Ganti Enter (Windows) jadi spasi
+			->Replace("\n", " ")    // Ganti Enter (Linux/Mac) jadi spasi
+			->Replace("\"", "");    // Hapus tanda kutip ganda (") agar tidak merusak format JSON
 
-	array<String^>^ bahanUser = bahanInput->Split(delimiters, StringSplitOptions::RemoveEmptyEntries);
+		// 2. SIAPKAN DATA JSON (MANUAL)
+		// Gunakan 'bahanAman', BUKAN 'bahanMentah' atau 'bahanInput'
+		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\" }";
 
-	bool ditemukan = false;
+		// 3. KIRIM KE SERVER (POST REQUEST)
+		String^ url = "http://127.0.0.1:5000/cari";
+		String^ responseServer = "";
 
-	// 3. ITERASI DATABASE (BUKU RESEP)
-	for each (FoodLover::Menu ^ resep in databaseMenu)
-	{
-		// 4. CEK KECOCOKAN RASA
-		if (resep->preferensiRasa->Equals(rasaInput, StringComparison::OrdinalIgnoreCase))
-		{
-			// Rasa cocok, sekarang cek bahannya
-			int skorKecocokan = 0;
+		try {
+			WebClient^ client = gcnew WebClient();
+			// Kita harus memberi tahu server bahwa kita mengirim JSON
+			client->Headers->Add("Content-Type", "application/json");
 
-			// 5. CEK KECOCOKAN BAHAN (SEQUENTIAL SEARCH)
-			for each (String ^ bahanResep in resep->bahan)
-			{
-				for each (String ^ bahanDariUser in bahanUser)
-				{
-					if (bahanDariUser->Trim()->Equals(bahanResep, StringComparison::OrdinalIgnoreCase))
-					{
-						skorKecocokan++;
-						break;
-					}
-				}
+			// Lakukan pengiriman (UploadString)
+			// Ini akan menunggu sampai server membalas...
+			responseServer = client->UploadString(url, "POST", jsonKirim);
+		}
+		catch (Exception^ ex) {
+			MessageBox::Show("Gagal terhubung ke server Python!\nPastikan server.py sudah berjalan.\n\nError: " + ex->Message);
+			return;
+		}
+
+		// 4. PARSING RESPON SERVER (CARA SEDERHANA)
+		// Server membalas: [{"nama": "Nasi Goreng", "rasa": "Pedas", "skor": 3}, {...}]
+
+		// Langkah A: Hapus karakter yang membingungkan (kurung siku, kurung kurawal)
+		String^ bersih = responseServer->Replace("[", "")->Replace("]", "")->Replace("{", "")->Replace("}", "")->Replace("\"", "");
+		// Hasil 'bersih': nama: Nasi Goreng, rasa: Pedas, skor: 3, nama: ...
+
+		// Langkah B: Pisahkan berdasarkan koma (pemisah antar properti)
+		// TAPI hati-hati, antar objek juga dipisah koma. 
+		// Karena format server kita konsisten, kita bisa split lalu cari kata kuncinya.
+		array<String^>^ properti = bersih->Split(',');
+
+		String^ namaSementara = "";
+		String^ rasaSementara = "";
+		String^ skorSementara = "";
+
+		bool adaHasil = false;
+
+		for each (String ^ prop in properti) {
+			// prop isinya misal: "nama: Nasi Goreng" atau " skor: 3"
+			String^ p = prop->Trim();
+
+			if (p->StartsWith("nama:")) {
+				namaSementara = p->Substring(5)->Trim(); // Ambil teks setelah "nama:"
 			}
+			else if (p->StartsWith("rasa:")) {
+				rasaSementara = p->Substring(5)->Trim();
+			}
+			else if (p->StartsWith("skor:")) {
+				skorSementara = p->Substring(5)->Trim();
 
-			// 6. TAMPILKAN HASIL JIKA ADA BAHAN YANG COCOK
-			if (skorKecocokan > 0)
-			{
-				this->listHasil->Items->Add(resep->namaMenu +
-					" (Kecocokan: " + skorKecocokan + " bahan)");
-				ditemukan = true;
+				// 5. TAMPILKAN (Saat kita sudah menemukan skor, berarti 1 menu selesai dibaca)
+				if (namaSementara != "" && skorSementara != "0") {
+					String^ tampil = namaSementara + " (Kecocokan: " + skorSementara + " bahan";
+					if (rasaInput == "Semua") {
+						tampil += ", Rasa: " + rasaSementara;
+					}
+					tampil += ")";
+
+					this->listHasil->Items->Add(tampil);
+					adaHasil = true;
+				}
+
+				// Reset untuk menu berikutnya
+				namaSementara = "";
+				rasaSementara = "";
+				skorSementara = "";
 			}
 		}
-	}
 
-	// 7. CEK JIKA TIDAK ADA HASIL SAMA SEKALI
-	if (!ditemukan)
-	{
-		this->listHasil->Items->Add("Tidak ada resep yang cocok dengan bahan & rasa itu.");
+		if (!adaHasil) {
+			this->listHasil->Items->Add("Tidak ada resep yang cocok (Kata Server).");
+		}
 	}
-}
-private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {
-	FeedbackForm^ form = gcnew FeedbackForm();
+	private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {
+		FeedbackForm^ form = gcnew FeedbackForm();
 
-	form->ShowDialog();
-}
+		form->ShowDialog();
+	}
 };
 }

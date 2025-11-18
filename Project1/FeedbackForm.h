@@ -9,6 +9,7 @@ namespace FoodLover {
 	using namespace System::Data;
 	using namespace System::Drawing;
 	using namespace System::IO;
+	using namespace System::Net;
 
 	/// <summary>
 	/// Summary for FeedbackForm
@@ -165,65 +166,46 @@ namespace FoodLover {
 #pragma endregion
 	private: System::Void btnKirim_Click(System::Object^ sender, System::EventArgs^ e) {
 
-		// 1. Ambil SEMUA data
 		String^ namaMenu = this->txtNamaMenu->Text;
-		String^ rasa = this->comboRasaFeedback->Text; // Data baru
-		String^ bahanInputKotor = this->txtBahanFeedback->Text; // Data "kotor"
+		String^ rasa = this->comboRasaFeedback->Text;
+		String^ bahanMentah = this->txtBahanFeedback->Text;
 
-		// 2. Validasi (sekarang cek rasa juga)
-		if (String::IsNullOrWhiteSpace(namaMenu) ||
-			String::IsNullOrWhiteSpace(rasa) ||
-			String::IsNullOrWhiteSpace(bahanInputKotor))
-		{
-			MessageBox::Show("Nama menu, rasa, dan bahan tidak boleh kosong.",
-				"Input Tidak Lengkap",
-				MessageBoxButtons::OK,
-				MessageBoxIcon::Warning);
+		// Validasi
+		if (String::IsNullOrWhiteSpace(namaMenu) || String::IsNullOrWhiteSpace(bahanMentah)) {
+			MessageBox::Show("Data tidak lengkap!", "Warning", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			return;
 		}
 
-		// --- INI BAGIAN PINTARNYA (POIN 4) ---
-		// 3. Bersihkan/Normalkan input bahan
-		// Kita gunakan parser yang sama persis dengan di MainForm
-		array<Char>^ delimiters = { ',', '.', '\r', '\n', ' ' };
-		array<String^>^ bahanArray =
-			bahanInputKotor->Split(delimiters, StringSplitOptions::RemoveEmptyEntries);
+		// 1. SANITASI INPUT (Ganti Enter jadi Spasi, Hapus kutip)
+		String^ bahanAman = bahanMentah
+			->Replace("\r\n", " ")
+			->Replace("\n", " ")
+			->Replace("\"", "");
 
-		// Satukan kembali array yang sudah bersih menjadi SATU string
-		// dipisahkan oleh koma yang konsisten.
-		String^ bahanBersih = String::Join(",", bahanArray);
-		// --- AKHIR BAGIAN PINTAR ---
+		String^ namaAman = namaMenu->Replace("\"", ""); // Sanitasi nama juga
 
+		// 2. BENTUK JSON
+		// Format: {"nama": "...", "rasa": "...", "bahan": "..."}
+		String^ jsonKirim = "{ \"nama\": \"" + namaAman + "\", \"rasa\": \"" + rasa + "\", \"bahan\": \"" + bahanAman + "\" }";
 
-		// 4. Format data baru untuk disimpan
-		String^ namaFile = "feedback.txt";
-		// Format baru: Jauh lebih bersih dan mudah dibaca!
-		String^ dataUntukDisimpan =
-			"Nama Menu: " + namaMenu + "\r\n" +
-			"Rasa: " + rasa + "\r\n" + // <-- Data baru
-			"Bahan: " + bahanBersih + "\r\n" + // <-- Data bersih
-			"--- FEEDBACK BARU ---" + "\r\n\r\n"; // Pemisah
+		// 3. KIRIM KE SERVER (Route /tambah)
+		String^ url = "http://127.0.0.1:5000/tambah";
 
-		// 5. Tulis ke file
-		try
-		{
-			StreamWriter^ writer = File::AppendText(namaFile);
-			writer->Write(dataUntukDisimpan);
-			writer->Close();
+		try {
+			WebClient^ client = gcnew WebClient();
+			client->Headers->Add("Content-Type", "application/json");
 
-			MessageBox::Show("Terima kasih! Feedback Anda telah disimpan.",
-				"Feedback Terkirim",
-				MessageBoxButtons::OK,
-				MessageBoxIcon::Information);
+			// Kirim!
+			String^ respon = client->UploadString(url, "POST", jsonKirim);
 
+			// Sukses
+			MessageBox::Show("Terima kasih! AI telah mempelajari resep baru ini.",
+				"Sukses", MessageBoxButtons::OK, MessageBoxIcon::Information);
 			this->Close();
 		}
-		catch (Exception^ ex)
-		{
-			MessageBox::Show("Terjadi error saat menyimpan: " + ex->Message,
-				"Error",
-				MessageBoxButtons::OK,
-				MessageBoxIcon::Error);
+		catch (Exception^ ex) {
+			MessageBox::Show("Gagal mengirim ke server: " + ex->Message,
+				"Error Server", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 	}
 	private: System::Void btnBatal_Click(System::Object^ sender, System::EventArgs^ e) {
