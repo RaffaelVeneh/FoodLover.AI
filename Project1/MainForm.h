@@ -1,4 +1,7 @@
 #pragma once
+#include "DataModels.h"
+#include "FeedbackForm.h"
+using namespace System::IO;
 
 namespace FoodLover {
 
@@ -10,29 +13,7 @@ namespace FoodLover {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
-	public ref class Menu {
-	public:
-		String^ namaMenu;
-		String^ preferensiRasa;
-		List<String^>^ bahan; 
-
-		Menu(String^ nama, String^ rasa, List<String^>^ listBahan) {
-			namaMenu = nama;
-			preferensiRasa = rasa;
-			bahan = listBahan;
-		}
-	};
-
-	public ref class HasilPencarian {
-	public:
-		String^ namaMenu;
-		int skorKecocokan;
-
-		HasilPencarian(String^ nama, int skor) {
-			namaMenu = nama;
-			skorKecocokan = skor;
-		}
-	};
+	
 
 	/// <summary>
 	/// Summary for MainForm
@@ -47,6 +28,7 @@ namespace FoodLover {
 			//TODO: Add the constructor code here
 			//
 			InisialisasiDatabase();
+			MuatFeedbackDariFile();
 		}
 
 	protected:
@@ -97,6 +79,57 @@ namespace FoodLover {
 			bahanRica->Add("bawang");
 			databaseMenu->Add(gcnew FoodLover::Menu("Ayam Rica-Rica", "Pedas", bahanRica));
 		}
+	private:
+		void MuatFeedbackDariFile()
+		{
+			String^ namaFile = "feedback.txt";
+			if (!File::Exists(namaFile)) {
+				return;
+			}
+
+			array<String^>^ semuaBaris = File::ReadAllLines(namaFile);
+
+			String^ menuBerikutnya = nullptr;
+			String^ rasaBerikutnya = nullptr; // <-- Variabel baru
+			String^ bahanBerikutnya = nullptr;
+
+			for each (String ^ baris in semuaBaris)
+			{
+				if (baris->StartsWith("Nama Menu: ")) {
+					menuBerikutnya = baris->Substring(11)->Trim();
+				}
+				else if (baris->StartsWith("Rasa: ")) { // <-- Logika baru
+					rasaBerikutnya = baris->Substring(6)->Trim();
+				}
+				else if (baris->StartsWith("Bahan: ")) { // <-- Logika baru
+					bahanBerikutnya = baris->Substring(7)->Trim();
+				}
+
+				// Cek jika SEMUA data sudah terkumpul
+				if (menuBerikutnya != nullptr && rasaBerikutnya != nullptr && bahanBerikutnya != nullptr)
+				{
+					// Parser bahan sekarang JAUH lebih sederhana!
+					// Kita hanya perlu split berdasarkan koma.
+					List<String^>^ listBahan = gcnew List<String^>();
+					array<String^>^ bahanArray = bahanBerikutnya->Split(',');
+
+					for each (String ^ b in bahanArray) {
+						// Kita tetap 'Trim' untuk jaga-jaga
+						listBahan->Add(b->Trim());
+					}
+
+					// Tambahkan ke database
+					databaseMenu->Add(gcnew FoodLover::Menu(menuBerikutnya,
+						rasaBerikutnya, // <-- Gunakan rasa baru
+						listBahan));
+
+					// Reset untuk mencari menu berikutnya
+					menuBerikutnya = nullptr;
+					rasaBerikutnya = nullptr;
+					bahanBerikutnya = nullptr;
+				}
+			}
+		}
 	private: System::Windows::Forms::Label^ labelRasa;
 	protected:
 
@@ -111,6 +144,7 @@ namespace FoodLover {
 	private: System::Windows::Forms::TextBox^ txtBahan;
 
 	private: List<FoodLover::Menu^>^ databaseMenu;
+	private: System::Windows::Forms::Button^ btnFeedback;
 
 	protected:
 
@@ -133,12 +167,13 @@ namespace FoodLover {
 			this->listHasil = (gcnew System::Windows::Forms::ListBox());
 			this->labelBahan = (gcnew System::Windows::Forms::Label());
 			this->txtBahan = (gcnew System::Windows::Forms::TextBox());
+			this->btnFeedback = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// labelRasa
 			// 
 			this->labelRasa->AutoSize = true;
-			this->labelRasa->Location = System::Drawing::Point(12, 160);
+			this->labelRasa->Location = System::Drawing::Point(12, 218);
 			this->labelRasa->Name = L"labelRasa";
 			this->labelRasa->Size = System::Drawing::Size(85, 13);
 			this->labelRasa->TabIndex = 0;
@@ -149,14 +184,14 @@ namespace FoodLover {
 			// 
 			this->comboRasa->FormattingEnabled = true;
 			this->comboRasa->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"Pedas", L"Manis", L"Gurih" });
-			this->comboRasa->Location = System::Drawing::Point(15, 176);
+			this->comboRasa->Location = System::Drawing::Point(15, 234);
 			this->comboRasa->Name = L"comboRasa";
 			this->comboRasa->Size = System::Drawing::Size(121, 21);
 			this->comboRasa->TabIndex = 1;
 			// 
 			// btnCari
 			// 
-			this->btnCari->Location = System::Drawing::Point(151, 174);
+			this->btnCari->Location = System::Drawing::Point(151, 232);
 			this->btnCari->Name = L"btnCari";
 			this->btnCari->Size = System::Drawing::Size(108, 23);
 			this->btnCari->TabIndex = 2;
@@ -167,9 +202,9 @@ namespace FoodLover {
 			// listHasil
 			// 
 			this->listHasil->FormattingEnabled = true;
-			this->listHasil->Location = System::Drawing::Point(15, 203);
+			this->listHasil->Location = System::Drawing::Point(15, 261);
 			this->listHasil->Name = L"listHasil";
-			this->listHasil->Size = System::Drawing::Size(398, 121);
+			this->listHasil->Size = System::Drawing::Size(472, 147);
 			this->listHasil->TabIndex = 3;
 			// 
 			// labelBahan
@@ -186,14 +221,25 @@ namespace FoodLover {
 			this->txtBahan->Location = System::Drawing::Point(15, 25);
 			this->txtBahan->Multiline = true;
 			this->txtBahan->Name = L"txtBahan";
-			this->txtBahan->Size = System::Drawing::Size(398, 132);
+			this->txtBahan->Size = System::Drawing::Size(472, 178);
 			this->txtBahan->TabIndex = 5;
+			// 
+			// btnFeedback
+			// 
+			this->btnFeedback->Location = System::Drawing::Point(15, 414);
+			this->btnFeedback->Name = L"btnFeedback";
+			this->btnFeedback->Size = System::Drawing::Size(141, 29);
+			this->btnFeedback->TabIndex = 6;
+			this->btnFeedback->Text = L"Menu Tidak Ditemukan\?";
+			this->btnFeedback->UseVisualStyleBackColor = true;
+			this->btnFeedback->Click += gcnew System::EventHandler(this, &MainForm::btnFeedback_Click);
 			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(425, 336);
+			this->ClientSize = System::Drawing::Size(499, 503);
+			this->Controls->Add(this->btnFeedback);
 			this->Controls->Add(this->txtBahan);
 			this->Controls->Add(this->labelBahan);
 			this->Controls->Add(this->listHasil);
@@ -269,6 +315,11 @@ private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e
 	{
 		this->listHasil->Items->Add("Tidak ada resep yang cocok dengan bahan & rasa itu.");
 	}
+}
+private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {
+	FeedbackForm^ form = gcnew FeedbackForm();
+
+	form->ShowDialog();
 }
 };
 }

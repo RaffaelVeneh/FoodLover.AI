@@ -15,30 +15,25 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FoodData.h">
+    <ClInclude Include="MenuData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MachineLearningEngine.h">
+    <ClInclude Include="MainForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FoodLoverGUI.h">
+    <ClInclude Include="DataModels.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FeedbackForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MachineLearningEngine.cpp">
+    <ClCompile Include="FoodLover.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FoodLoverGUI.cpp">
+    <ClCompile Include="FeedbackForm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Project1_new.vcxproj" />
-    <None Include="README.md" />
-    <None Include="setup_project.ps1" />
   </ItemGroup>
 </Project>

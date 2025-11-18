@@ -1,0 +1,11 @@
+--- FEEDBACK BARU ---
+Nama Menu: Opor Ayam
+Rasa: Gurih
+Bahan: ayam, santan, kunyit
+---------------------
+
+Nama Menu: ayam bacem
+Rasa: Manis
+Bahan: kecap,ayam,lengkuas
+--- FEEDBACK BARU ---
+
