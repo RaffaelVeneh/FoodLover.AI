@@ -2,43 +2,67 @@ import json
 import os
 import re
 from flask import Flask, request, jsonify
+from thefuzz import fuzz
 
 app = Flask(__name__)
 NAMA_FILE_DB = 'resep.json'
+NAMA_FILE_KAMUS = 'kamus.json'
 
-# --- FUNGSI BANTUAN: BACA & TULIS FILE ---
-def muat_database():
-    # Jika file tidak ada, kembalikan list kosong
-    if not os.path.exists(NAMA_FILE_DB):
-        return []
+def muat_json(nama_file):
+    # Fungsi serbaguna untuk membaca file JSON
+    if not os.path.exists(nama_file):
+        print(f"[INFO] File {nama_file} tidak ditemukan, membuat baru/kosong.")
+        return {} if nama_file == NAMA_FILE_KAMUS else []
     try:
-        with open(NAMA_FILE_DB, 'r') as f:
+        with open(nama_file, 'r') as f:
             return json.load(f)
-    except:
-        return [] # Jika error/kosong
+    except Exception as e:
+        print(f"[ERROR] Gagal membaca {nama_file}: {e}")
+        return {} if nama_file == NAMA_FILE_KAMUS else []
 
 def simpan_database(data):
     with open(NAMA_FILE_DB, 'w') as f:
-        json.dump(data, f, indent=2) # indent=2 agar rapi dibaca manusia
+        json.dump(data, f, indent=2)
 
-# --- ROUTE 1: PENCARIAN (YANG SUDAH ADA) ---
+CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
+print(f"[INFO] Kamus berhasil dimuat: {len(CACHE_KAMUS)} kata sinonim.")
+
+# --- FUNGSI PENCARI CERDAS (FUZZY LOGIC) ---
+def cek_kemiripan(bahan_user, bahan_resep):
+    # 1. Cek Sinonim dulu
+    bahan_user = CACHE_KAMUS.get(bahan_user, bahan_user)
+    
+    # 2. Cek Exact Match (Cepat)
+    if bahan_user == bahan_resep:
+        return True
+        
+    # 3. Cek Fuzzy (Untuk Typo)
+    # Ratio > 80 berarti mirip. Contoh: "bwang" vs "bawang" = 91
+    skor_kemiripan = fuzz.ratio(bahan_user, bahan_resep)
+    if skor_kemiripan > 80:
+        return True
+        
+    # 4. Cek Partial (Jika user ketik "ayam", cocok dengan "daging ayam")
+    if bahan_user in bahan_resep or bahan_resep in bahan_user:
+        return True
+        
+    return False
+
 @app.route('/cari', methods=['POST'])
 def cari_resep():
     data_masuk = request.get_json()
     input_bahan_raw = data_masuk.get('bahan', '')
     input_rasa = data_masuk.get('rasa', 'Semua')
     
-    # Muat data segar dari file
-    database_menu = muat_database()
+    database_menu = muat_json(NAMA_FILE_DB) # Muat ulang DB agar update realtime
     
-    # Pre-processing (Regex Split)
+    # Bersihkan input user
     list_bahan_user = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', input_bahan_raw) if x]
     
-    print(f"[CARI] Bahan: {list_bahan_user}, Rasa: {input_rasa}")
-    
     hasil_sementara = []
+    
     for menu in database_menu:
-        # Logika Cek Rasa
+        # Filter Rasa
         rasa_cocok = False
         if input_rasa == "Semua":
             rasa_cocok = True
@@ -47,57 +71,61 @@ def cari_resep():
             
         if rasa_cocok:
             skor = 0
-            # Logika Cek Bahan
-            for b_menu in menu.get('bahan', []):
+            bahan_cocok_list = []
+            semua_bahan_resep = menu.get('bahan', [])
+            
+            # Cek Bahan
+            for b_resep in semua_bahan_resep:
+                b_resep_kecil = b_resep.lower()
                 for b_user in list_bahan_user:
-                    # contains logic simple
-                    if b_user == b_menu.lower():
+                    if cek_kemiripan(b_user, b_resep_kecil):
                         skor += 1
-                        break
+                        bahan_cocok_list.append(b_resep)
+                        break 
             
             if skor > 0:
                 hasil_sementara.append({
                     "nama": menu['nama'],
                     "rasa": menu.get('rasa', 'Umum'),
-                    "skor": skor
+                    "skor": skor,
+                    "bahan_lengkap": "|".join(semua_bahan_resep),
+                    "bahan_match": "|".join(bahan_cocok_list)
                 })
 
-    # Sorting
     hasil_final = sorted(hasil_sementara, key=lambda x: x['skor'], reverse=True)
     return jsonify(hasil_final)
 
-# --- ROUTE 2: TAMBAH RESEP (FITUR BARU!) ---
 @app.route('/tambah', methods=['POST'])
 def tambah_resep():
     data_masuk = request.get_json()
-    
     nama_baru = data_masuk.get('nama')
     rasa_baru = data_masuk.get('rasa')
-    bahan_raw = data_masuk.get('bahan') # String "ayam, kecap"
+    bahan_raw = data_masuk.get('bahan')
     
     if not nama_baru or not bahan_raw:
         return jsonify({"status": "gagal", "pesan": "Data tidak lengkap"}), 400
         
-    # Bersihkan bahan menjadi list
     list_bahan_bersih = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', bahan_raw) if x]
     
-    # Buat objek menu baru
     menu_baru = {
         "nama": nama_baru,
         "rasa": rasa_baru,
         "bahan": list_bahan_bersih
     }
     
-    # 1. Baca database lama
-    db_sekarang = muat_database()
-    # 2. Tambahkan yang baru
+    db_sekarang = muat_json(NAMA_FILE_DB)
     db_sekarang.append(menu_baru)
-    # 3. Simpan kembali ke file
     simpan_database(db_sekarang)
     
-    print(f"[TAMBAH] Berhasil menyimpan resep baru: {nama_baru}")
-    return jsonify({"status": "sukses", "pesan": "Resep berhasil disimpan ke Server!"})
+    return jsonify({"status": "sukses", "pesan": "Resep disimpan!"})
+
+# Fitur Tambahan: Reload Kamus tanpa restart server
+@app.route('/reload-kamus', methods=['GET'])
+def reload_kamus():
+    global CACHE_KAMUS
+    CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
+    return jsonify({"status": "sukses", "pesan": "Kamus sinonim telah diperbarui!", "jumlah_kata": len(CACHE_KAMUS)})
 
 if __name__ == '__main__':
-    print("Server FoodAssistant (Database File) Berjalan...")
+    print("Server AI FoodAssistant Berjalan...")
     app.run(debug=True, port=5000)
