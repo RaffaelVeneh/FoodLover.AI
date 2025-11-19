@@ -4,6 +4,7 @@
 using namespace System::IO;
 using namespace System::Net;
 using namespace System::Text;
+using namespace System::Text::RegularExpressions;
 
 namespace FoodLover {
 
@@ -140,7 +141,7 @@ namespace FoodLover {
 	private: System::Windows::Forms::ComboBox^ comboRasa;
 
 	private: System::Windows::Forms::Button^ btnCari;
-	private: System::Windows::Forms::ListBox^ listHasil;
+
 	private: System::Windows::Forms::Label^ labelBahan;
 
 
@@ -149,6 +150,7 @@ namespace FoodLover {
 
 	private: List<FoodLover::Menu^>^ databaseMenu;
 	private: System::Windows::Forms::Button^ btnFeedback;
+private: System::Windows::Forms::TreeView^ treeViewHasil;
 
 	protected:
 
@@ -168,10 +170,10 @@ namespace FoodLover {
 			this->labelRasa = (gcnew System::Windows::Forms::Label());
 			this->comboRasa = (gcnew System::Windows::Forms::ComboBox());
 			this->btnCari = (gcnew System::Windows::Forms::Button());
-			this->listHasil = (gcnew System::Windows::Forms::ListBox());
 			this->labelBahan = (gcnew System::Windows::Forms::Label());
 			this->txtBahan = (gcnew System::Windows::Forms::TextBox());
 			this->btnFeedback = (gcnew System::Windows::Forms::Button());
+			this->treeViewHasil = (gcnew System::Windows::Forms::TreeView());
 			this->SuspendLayout();
 			// 
 			// labelRasa
@@ -203,14 +205,6 @@ namespace FoodLover {
 			this->btnCari->UseVisualStyleBackColor = true;
 			this->btnCari->Click += gcnew System::EventHandler(this, &MainForm::btnCari_Click);
 			// 
-			// listHasil
-			// 
-			this->listHasil->FormattingEnabled = true;
-			this->listHasil->Location = System::Drawing::Point(15, 261);
-			this->listHasil->Name = L"listHasil";
-			this->listHasil->Size = System::Drawing::Size(472, 147);
-			this->listHasil->TabIndex = 3;
-			// 
 			// labelBahan
 			// 
 			this->labelBahan->AutoSize = true;
@@ -238,15 +232,23 @@ namespace FoodLover {
 			this->btnFeedback->UseVisualStyleBackColor = true;
 			this->btnFeedback->Click += gcnew System::EventHandler(this, &MainForm::btnFeedback_Click);
 			// 
+			// treeViewHasil
+			// 
+			this->treeViewHasil->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9));
+			this->treeViewHasil->Location = System::Drawing::Point(15, 262);
+			this->treeViewHasil->Name = L"treeViewHasil";
+			this->treeViewHasil->Size = System::Drawing::Size(472, 146);
+			this->treeViewHasil->TabIndex = 7;
+			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(499, 503);
+			this->Controls->Add(this->treeViewHasil);
 			this->Controls->Add(this->btnFeedback);
 			this->Controls->Add(this->txtBahan);
 			this->Controls->Add(this->labelBahan);
-			this->Controls->Add(this->listHasil);
 			this->Controls->Add(this->btnCari);
 			this->Controls->Add(this->comboRasa);
 			this->Controls->Add(this->labelRasa);
@@ -264,93 +266,132 @@ namespace FoodLover {
 	}
 	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
 
-		// 1. AMBIL INPUT
+		// 1. PERSIAPAN UI & DATA
+		this->treeViewHasil->Nodes->Clear();
+		this->treeViewHasil->BeginUpdate();
+
 		String^ rasaInput = this->comboRasa->Text;
 		String^ bahanMentah = this->txtBahan->Text;
-		this->listHasil->Items->Clear();
 
-		if (String::IsNullOrEmpty(rasaInput)) return;
+		if (String::IsNullOrEmpty(rasaInput)) {
+			this->treeViewHasil->EndUpdate();
+			return;
+		}
 
-		String^ bahanAman = bahanMentah
-			->Replace("\r\n", " ")  // Ganti Enter (Windows) jadi spasi
-			->Replace("\n", " ")    // Ganti Enter (Linux/Mac) jadi spasi
-			->Replace("\"", "");    // Hapus tanda kutip ganda (") agar tidak merusak format JSON
-
-		// 2. SIAPKAN DATA JSON (MANUAL)
-		// Gunakan 'bahanAman', BUKAN 'bahanMentah' atau 'bahanInput'
+		// Sanitasi input bahan (Hapus Enter dan kutip)
+		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
 		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\" }";
 
-		// 3. KIRIM KE SERVER (POST REQUEST)
+		// 2. REQUEST KE SERVER
 		String^ url = "http://127.0.0.1:5000/cari";
 		String^ responseServer = "";
 
 		try {
 			WebClient^ client = gcnew WebClient();
-			// Kita harus memberi tahu server bahwa kita mengirim JSON
 			client->Headers->Add("Content-Type", "application/json");
-
-			// Lakukan pengiriman (UploadString)
-			// Ini akan menunggu sampai server membalas...
+			client->Encoding = System::Text::Encoding::UTF8;
 			responseServer = client->UploadString(url, "POST", jsonKirim);
 		}
 		catch (Exception^ ex) {
-			MessageBox::Show("Gagal terhubung ke server Python!\nPastikan server.py sudah berjalan.\n\nError: " + ex->Message);
+			MessageBox::Show("Server Error: " + ex->Message);
+			this->treeViewHasil->EndUpdate();
 			return;
 		}
 
-		// 4. PARSING RESPON SERVER (CARA SEDERHANA)
-		// Server membalas: [{"nama": "Nasi Goreng", "rasa": "Pedas", "skor": 3}, {...}]
+		// 3. PARSING JSON TANGGUH (REGEX VERSION)
+		// Server Flask (Debug Mode) mengirim JSON dengan banyak spasi dan Enter (\n).
+		// Contoh: "}, \n  {". Kita harus membersihkannya dulu.
 
-		// Langkah A: Hapus karakter yang membingungkan (kurung siku, kurung kurawal)
-		String^ bersih = responseServer->Replace("[", "")->Replace("]", "")->Replace("{", "")->Replace("}", "")->Replace("\"", "");
-		// Hasil 'bersih': nama: Nasi Goreng, rasa: Pedas, skor: 3, nama: ...
+		// A. Hapus semua Baris Baru (Enter) agar string menjadi satu baris panjang
+		String^ satuBaris = responseServer->Replace("\r", "")->Replace("\n", "");
 
-		// Langkah B: Pisahkan berdasarkan koma (pemisah antar properti)
-		// TAPI hati-hati, antar objek juga dipisah koma. 
-		// Karena format server kita konsisten, kita bisa split lalu cari kata kuncinya.
-		array<String^>^ properti = bersih->Split(',');
+		// B. Hapus kurung siku pembungkus array [ ... ]
+		satuBaris = satuBaris->Trim();
+		if (satuBaris->StartsWith("[") && satuBaris->EndsWith("]")) {
+			satuBaris = satuBaris->Substring(1, satuBaris->Length - 2);
+		}
 
-		String^ namaSementara = "";
-		String^ rasaSementara = "";
-		String^ skorSementara = "";
+		// Jika kosong (tidak ada hasil), berhenti
+		if (String::IsNullOrWhiteSpace(satuBaris)) {
+			this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
+			this->treeViewHasil->EndUpdate();
+			return;
+		}
+
+		// C. GUNAKAN REGEX untuk memisahkan objek
+		// Pola: Mencari "}" diikuti spasi berapapun, lalu koma, lalu spasi berapapun, lalu "{"
+		// Kita ubah pola tersebut menjadi tanda pemisah unik "|BATAS|"
+		String^ dataTerpisah = Regex::Replace(satuBaris, "\\}\\s*,\\s*\\{", "}|BATAS|{");
+
+		// D. Split string berdasarkan tanda unik tadi
+		array<String^>^ listMenuRaw = dataTerpisah->Split(gcnew array<String^>{"|BATAS|"}, StringSplitOptions::RemoveEmptyEntries);
 
 		bool adaHasil = false;
 
-		for each (String ^ prop in properti) {
-			// prop isinya misal: "nama: Nasi Goreng" atau " skor: 3"
-			String^ p = prop->Trim();
+		for each(String ^ menuString in listMenuRaw) {
+			// Bersihkan karakter JSON ({, }, ") yang tersisa
+			String^ menuBersih = menuString->Replace("{", "")->Replace("}", "")->Replace("\"", "");
 
-			if (p->StartsWith("nama:")) {
-				namaSementara = p->Substring(5)->Trim(); // Ambil teks setelah "nama:"
-			}
-			else if (p->StartsWith("rasa:")) {
-				rasaSementara = p->Substring(5)->Trim();
-			}
-			else if (p->StartsWith("skor:")) {
-				skorSementara = p->Substring(5)->Trim();
+			// Split properti berdasarkan koma
+			array<String^>^ properti = menuBersih->Split(',');
 
-				// 5. TAMPILKAN (Saat kita sudah menemukan skor, berarti 1 menu selesai dibaca)
-				if (namaSementara != "" && skorSementara != "0") {
-					String^ tampil = namaSementara + " (Kecocokan: " + skorSementara + " bahan";
-					if (rasaInput == "Semua") {
-						tampil += ", Rasa: " + rasaSementara;
+			String^ namaMenu = "";
+			String^ skor = "";
+			String^ rasaMenu = "";
+			String^ bahanLengkapStr = "";
+			String^ bahanMatchStr = "";
+
+			for each(String ^ prop in properti) {
+				String^ p = prop->Trim();
+				if (p->StartsWith("nama:")) namaMenu = p->Substring(5)->Trim();
+				else if (p->StartsWith("rasa:")) rasaMenu = p->Substring(5)->Trim();
+				else if (p->StartsWith("skor:")) skor = p->Substring(5)->Trim();
+				else if (p->StartsWith("bahan_lengkap:")) bahanLengkapStr = p->Substring(14)->Trim();
+				else if (p->StartsWith("bahan_match:")) bahanMatchStr = p->Substring(12)->Trim();
+			}
+
+			// 4. RENDER HASIL
+			if (namaMenu != "" && skor != "0") {
+				adaHasil = true;
+
+				// Format Label dengan Info Rasa (Sesuai Request)
+				String^ labelNode = namaMenu + " (" + skor + " Cocok";
+				if (rasaInput == "Semua") {
+					labelNode += ", Rasa: " + rasaMenu;
+				}
+				labelNode += ")";
+
+				TreeNode^ parentNode = gcnew TreeNode(labelNode);
+				parentNode->ForeColor = Color::DarkBlue;
+				parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+
+				// Render Bahan
+				array<String^>^ listBahan = bahanLengkapStr->Split('|');
+				for each(String ^ bahan in listBahan) {
+					TreeNode^ childNode = gcnew TreeNode();
+
+					// Cek Match
+					if (bahanMatchStr->Contains(bahan)) {
+						childNode->Text = "v " + bahan; // Checklist
+						childNode->ForeColor = Color::Green;
+						childNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
 					}
-					tampil += ")";
-
-					this->listHasil->Items->Add(tampil);
-					adaHasil = true;
+					else {
+						childNode->Text = "- " + bahan;
+						childNode->ForeColor = Color::Gray;
+					}
+					parentNode->Nodes->Add(childNode);
 				}
 
-				// Reset untuk menu berikutnya
-				namaSementara = "";
-				rasaSementara = "";
-				skorSementara = "";
+				this->treeViewHasil->Nodes->Add(parentNode);
 			}
 		}
 
 		if (!adaHasil) {
-			this->listHasil->Items->Add("Tidak ada resep yang cocok (Kata Server).");
+			this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
 		}
+
+		this->treeViewHasil->EndUpdate();
 	}
 	private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {
 		FeedbackForm^ form = gcnew FeedbackForm();
