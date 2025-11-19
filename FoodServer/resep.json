@@ -255,5 +255,785 @@
       "daging cincang",
       "daun bawang"
     ]
+  },
+  {
+    "nama": "Cendol",
+    "rasa": "Manis",
+    "bahan": [
+      "santan",
+      "gula",
+      "jawa",
+      "cendol"
+    ]
+  },
+  {
+    "nama": "Bakso Urat Spesial",
+    "rasa": "Gurih",
+    "bahan": ["bakso", "kaldu sapi", "bawang goreng", "seledri"]
+  },
+  {
+    "nama": "Mie Aceh Pedas",
+    "rasa": "Pedas",
+    "bahan": ["mie", "daging sapi", "cabai", "rempah-rempah"]
+  },
+  {
+    "nama": "Tahu Gejrot Cirebon",
+    "rasa": "Asam",
+    "bahan": ["tahu", "gula merah", "asam jawa", "cabai"]
+  },
+  {
+    "nama": "Ayam Bakar Madu",
+    "rasa": "Manis",
+    "bahan": ["ayam", "madu", "kecap", "bawang"]
+  },
+  {
+    "nama": "Soto Betawi Santan",
+    "rasa": "Gurih",
+    "bahan": ["daging sapi", "santan", "bawang", "kentang"]
+  },
+  {
+    "nama": "Ikan Bakar Jimbaran",
+    "rasa": "Gurih",
+    "bahan": ["ikan kakap", "jeruk limau", "bawang", "kecap"]
+  },
+  {
+    "nama": "Kerak Telor Betawi",
+    "rasa": "Gurih",
+    "bahan": ["telur bebek", "beras ketan", "ebi", "kelapa sangrai"]
+  },
+  {
+    "nama": "Nasi Uduk Betawi",
+    "rasa": "Gurih",
+    "bahan": ["beras", "santan", "serai", "daun salam"]
+  },
+  {
+    "nama": "Rawon Daging",
+    "rasa": "Gurih",
+    "bahan": ["daging sapi", "kluwek", "bawang", "tauge"]
+  },
+  {
+    "nama": "Sop Buntut",
+    "rasa": "Gurih",
+    "bahan": ["buntut sapi", "wortel", "kentang", "seledri"]
+  },
+  {
+    "nama": "Ayam Woku",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "kemangi", "cabai", "tomat"]
+  },
+  {
+    "nama": "Ikan Kuah Kuning",
+    "rasa": "Gurih",
+    "bahan": ["ikan tongkol", "kunyit", "serai", "bawang"]
+  },
+  {
+    "nama": "Nasi Liwet Sunda",
+    "rasa": "Gurih",
+    "bahan": ["beras", "santan", "ikan asin", "cabai hijau"]
+  },
+  {
+    "nama": "Batagor Bandung",
+    "rasa": "Gurih",
+    "bahan": ["ikan tenggiri", "tepung tapioka", "kacang", "kecap"]
+  },
+  {
+    "nama": "Siomay Bandung",
+    "rasa": "Gurih",
+    "bahan": ["ikan tenggiri", "kentang", "kubis", "bumbu kacang"]
+  },
+  {
+    "nama": "Tahu Bulat",
+    "rasa": "Gurih",
+    "bahan": ["tahu", "tepung", "bawang putih", "garam"]
+  },
+  {
+    "nama": "Ayam Pop Padang",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "bawang putih", "jeruk nipis", "garam"]
+  },
+  {
+    "nama": "Udang Balado",
+    "rasa": "Pedas",
+    "bahan": ["udang", "cabai merah", "bawang", "tomat"]
+  },
+  {
+    "nama": "Kentang Mustofa",
+    "rasa": "Pedas",
+    "bahan": ["kentang", "cabai", "gula", "daun jeruk"]
+  },
+  {
+    "nama": "Bandeng Presto",
+    "rasa": "Gurih",
+    "bahan": ["ikan bandeng", "kunyit", "bawang", "daun salam"]
+  },
+  {
+    "nama": "Bakmi Jawa",
+    "rasa": "Gurih",
+    "bahan": ["mie", "ayam suwir", "bawang", "kaldu ayam"]
+  },
+  {
+    "nama": "Mangut Lele",
+    "rasa": "Pedas",
+    "bahan": ["lele", "santan", "cabai", "kemangi"]
+  },
+  {
+    "nama": "Sop Iga",
+    "rasa": "Gurih",
+    "bahan": ["iga sapi", "wortel", "kentang", "bawang"]
+  },
+  {
+    "nama": "Bakwan Jagung",
+    "rasa": "Gurih",
+    "bahan": ["jagung", "tepung", "daun bawang", "ketumbar"]
+  },
+  {
+    "nama": "Gulai Kambing",
+    "rasa": "Gurih",
+    "bahan": ["daging kambing", "santan", "rempah", "cabai"]
+  },
+  {
+    "nama": "Empal Gentong",
+    "rasa": "Gurih",
+    "bahan": ["daging sapi", "santan", "kucai", "bawang goreng"]
+  },
+  {
+    "nama": "Opor Ayam",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "santan", "kunyit", "serai"]
+  },
+  {
+    "nama": "Ayam Bumbu Rujak",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "cabai", "tomat", "bawang"]
+  },
+  {
+    "nama": "Dendeng Balado",
+    "rasa": "Pedas",
+    "bahan": ["daging sapi", "cabai merah", "bawang"]
+  },
+  {
+    "nama": "Cah Kangkung",
+    "rasa": "Gurih",
+    "bahan": ["kangkung", "bawang putih", "saus tiram"]
+  },
+  {
+    "nama": "Capcay Kuah",
+    "rasa": "Gurih",
+    "bahan": ["wortel", "kol", "brokoli", "bawang"]
+  },
+  {
+    "nama": "Ayam Teriyaki",
+    "rasa": "Manis",
+    "bahan": ["ayam", "kecap manis", "bawang bombay"]
+  },
+  {
+    "nama": "Korean Spicy Chicken",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "gochujang", "garlic", "gula"]
+  },
+  {
+    "nama": "Ramen Pedas Jepang",
+    "rasa": "Pedas",
+    "bahan": ["mie ramen", "kaldu", "cabai", "telur"]
+  },
+  {
+    "nama": "Sandwich Telur",
+    "rasa": "Gurih",
+    "bahan": ["roti", "telur", "mayonnaise", "garam"]
+  },
+  {
+    "nama": "Bubur Ayam",
+    "rasa": "Gurih",
+    "bahan": ["beras", "ayam suwir", "kecap", "cakwe"]
+  },
+  {
+    "nama": "Pudding Cokelat",
+    "rasa": "Manis",
+    "bahan": ["cokelat", "susu", "gula", "agar-agar"]
+  },
+  {
+    "nama": "Es Doger",
+    "rasa": "Manis",
+    "bahan": ["santan", "gula", "kelapa", "tapai"]
+  },
+  {
+    "nama": "Nasi Kebuli",
+    "rasa": "Gurih",
+    "bahan": ["beras", "daging kambing", "rempah", "santan"]
+  },
+  {
+    "nama": "Chicken Katsu",
+    "rasa": "Gurih",
+    "bahan": ["ayam fillet", "tepung roti", "telur"]
+  },
+  {
+    "nama": "Spaghetti Bolognese",
+    "rasa": "Gurih",
+    "bahan": ["spaghetti", "daging cincang", "tomat", "bawang"]
+  },
+  {
+    "nama": "Spaghetti Carbonara",
+    "rasa": "Gurih",
+    "bahan": ["pasta", "krim susu", "keju", "telur"]
+  },
+  {
+    "nama": "Nasi Kuning",
+    "rasa": "Gurih",
+    "bahan": ["beras", "kunyit", "santan", "serai"]
+  },
+  {
+    "nama": "Ayam Geprek",
+    "rasa": "Pedas",
+    "bahan": ["ayam crispy", "cabai rawit", "bawang putih"]
+  },
+  {
+    "nama": "Gudeg Jogja",
+    "rasa": "Manis",
+    "bahan": ["nangka muda", "gula merah", "santan", "daun salam"]
+  },
+  {
+    "nama": "Nasi Jamblang Cirebon",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "ayam", "sambal", "daun jati"]
+  },
+  {
+    "nama": "Nasi Kucing Angkringan",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "ikan teri", "sambal", "tempe"]
+  },
+  {
+    "nama": "Tongseng Kambing",
+    "rasa": "Pedas",
+    "bahan": ["kambing", "kubis", "cabai", "santan"]
+  },
+  {
+    "nama": "Ayam Betutu",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "rempah bali", "cabai", "serai"]
+  },
+  {
+    "nama": "Bubur Manado",
+    "rasa": "Gurih",
+    "bahan": ["beras", "labu", "bayam", "jagung"]
+  },
+  {
+    "nama": "Ayam Penyet",
+    "rasa": "Pedas",
+    "bahan": ["ayam goreng", "sambal", "lalapan"]
+  },
+  {
+    "nama": "Ikan Asam Padeh",
+    "rasa": "Asam",
+    "bahan": ["ikan tongkol", "asam jawa", "cabai", "tomat"]
+  },
+  {
+    "nama": "Sambal Bawang",
+    "rasa": "Pedas",
+    "bahan": ["cabai", "bawang putih", "minyak", "garam"]
+  },
+  {
+    "nama": "Sambal Matah Bali",
+    "rasa": "Pedas",
+    "bahan": ["cabai rawit", "bawang merah", "serai", "jeruk limau"]
+  },
+  {
+    "nama": "Sayur Lodeh",
+    "rasa": "Gurih",
+    "bahan": ["labu siam", "santan", "kacang panjang", "tempe"]
+  },
+  {
+    "nama": "Sayur Bayam",
+    "rasa": "Gurih",
+    "bahan": ["bayam", "bawang", "kaldu", "jagung"]
+  },
+  {
+    "nama": "Gulai Ikan Patin",
+    "rasa": "Gurih",
+    "bahan": ["ikan patin", "santan", "kunyit", "cabai"]
+  },
+  {
+    "nama": "Sambal Ijo Padang",
+    "rasa": "Pedas",
+    "bahan": ["cabai hijau", "tomat hijau", "bawang"]
+  },
+  {
+    "nama": "Ayam Bakar Padang",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "cabai", "bawang", "santan"]
+  },
+  {
+    "nama": "Ayam Kalasan",
+    "rasa": "Manis",
+    "bahan": ["ayam", "gula merah", "kecap", "serai"]
+  },
+  {
+    "nama": "Ketoprak Jakarta",
+    "rasa": "Gurih",
+    "bahan": ["ketupat", "tahu", "kecambah", "bumbu kacang"]
+  },
+  {
+    "nama": "Lontong Sayur",
+    "rasa": "Gurih",
+    "bahan": ["lontong", "labu siam", "santan"]
+  },
+  {
+    "nama": "Asinan Betawi",
+    "rasa": "Asam",
+    "bahan": ["timun", "wortel", "cuka", "cabai"]
+  },
+  {
+    "nama": "Mie Lethek Bantul",
+    "rasa": "Gurih",
+    "bahan": ["mie singkong", "bawang", "sawi", "ayam suwir"]
+  },
+  {
+    "nama": "Beef Teriyaki",
+    "rasa": "Manis",
+    "bahan": ["daging sapi", "kecap jepang", "bawang bombay"]
+  },
+  {
+    "nama": "Chicken Curry Jepang",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "kentang", "bawang", "kari blok"]
+  },
+  {
+    "nama": "Kimchi Jjigae",
+    "rasa": "Pedas",
+    "bahan": ["kimchi", "tahu", "gochujang", "ayam"]
+  },
+  {
+    "nama": "Tteokbokki",
+    "rasa": "Pedas",
+    "bahan": ["rice cake", "gochujang", "gula", "kaldu"]
+  },
+  {
+    "nama": "Bibimbap",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "sayur", "telur", "saus pedas"]
+  },
+  {
+    "nama": "Mapo Tofu",
+    "rasa": "Pedas",
+    "bahan": ["tahu", "daging cincang", "cabai", "saus kedelai"]
+  },
+  {
+    "nama": "Dumpling Ayam",
+    "rasa": "Gurih",
+    "bahan": ["kulit pangsit", "ayam cincang", "bawang"]
+  },
+  {
+    "nama": "Tom Yum Thailand",
+    "rasa": "Asam",
+    "bahan": ["udang", "jeruk nipis", "cabai", "serai"]
+  },
+  {
+    "nama": "Pad Thai",
+    "rasa": "Gurih",
+    "bahan": ["mie beras", "telur", "kecap ikan", "kacang"]
+  },
+  {
+    "nama": "Laksa Singapura",
+    "rasa": "Pedas",
+    "bahan": ["mie", "curry paste", "santan", "udang"]
+  },
+  {
+    "nama": "Beef Burger",
+    "rasa": "Gurih",
+    "bahan": ["roti burger", "daging", "keju", "selada"]
+  },
+  {
+    "nama": "Chicken Nugget",
+    "rasa": "Gurih",
+    "bahan": ["ayam giling", "tepung roti", "telur"]
+  },
+  {
+    "nama": "French Fries",
+    "rasa": "Gurih",
+    "bahan": ["kentang", "garam", "minyak"]
+  },
+  {
+    "nama": "Garlic Bread",
+    "rasa": "Gurih",
+    "bahan": ["roti", "bawang putih", "mentega", "parsley"]
+  },
+  {
+    "nama": "Mac and Cheese",
+    "rasa": "Gurih",
+    "bahan": ["pasta", "keju cheddar", "susu"]
+  },
+  {
+    "nama": "Chicken Steak",
+    "rasa": "Gurih",
+    "bahan": ["ayam fillet", "lada", "kentang", "saus"]
+  },
+  {
+    "nama": "Beef Lasagna",
+    "rasa": "Gurih",
+    "bahan": ["pasta", "keju", "daging cincang", "tomat"]
+  },
+  {
+    "nama": "Caesar Salad",
+    "rasa": "Gurih",
+    "bahan": ["selada", "keju parmesan", "crouton"]
+  },
+  {
+    "nama": "Es Cincau",
+    "rasa": "Manis",
+    "bahan": ["cincau", "gula cair", "santan"]
+  },
+  {
+    "nama": "Jus Alpukat",
+    "rasa": "Manis",
+    "bahan": ["alpukat", "susu kental manis", "es"]
+  },
+  {
+    "nama": "Pancake Cokelat",
+    "rasa": "Manis",
+    "bahan": ["tepung", "cokelat", "susu", "telur"]
+  },
+  {
+    "nama": "Brownies Panggang",
+    "rasa": "Manis",
+    "bahan": ["cokelat", "tepung", "gula", "telur"]
+  },
+  {
+    "nama": "Es Teh Manis",
+    "rasa": "Manis",
+    "bahan": ["teh", "gula", "es"]
+  },
+  {
+    "nama": "Milkshake Strawberry",
+    "rasa": "Manis",
+    "bahan": ["susu", "stroberi", "gula"]
+  },
+  {
+    "nama": "Indomie Goreng Telur",
+    "rasa": "Gurih",
+    "bahan": ["mie instan", "telur", "kecap"]
+  },
+  {
+    "nama": "Nasi Telur Kecap",
+    "rasa": "Manis",
+    "bahan": ["nasi", "telur", "kecap", "bawang"]
+  },
+  {
+    "nama": "Sosis Saus Tomat",
+    "rasa": "Gurih",
+    "bahan": ["sosis", "saus tomat", "bawang"]
+  },
+  {
+    "nama": "Roti Bakar Cokelat",
+    "rasa": "Manis",
+    "bahan": ["roti", "cokelat meses", "mentega"]
+  },
+  {
+    "nama": "Telur Ceplok",
+    "rasa": "Gurih",
+    "bahan": ["telur", "garam", "minyak"]
+  },
+  {
+    "nama": "Nasi Goreng Kampung",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "telur", "bawang", "cabe rawit"]
+  },
+  {
+    "nama": "Nasi Goreng Seafood",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "udang", "cumi", "kecap"]
+  },
+  {
+    "nama": "Nasi Goreng Jawa",
+    "rasa": "Pedas",
+    "bahan": ["nasi", "ayam suwir", "kol", "cabai"]
+  },
+  {
+    "nama": "Nasi Goreng Siram",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "sayuran", "saus kental", "ayam"]
+  },
+  {
+    "nama": "Nasi Goreng Ikan Asin",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "ikan asin", "bawang", "cabai"]
+  },
+  {
+    "nama": "Nasi Gila",
+    "rasa": "Pedas",
+    "bahan": ["nasi", "sosis", "bakso", "cabai"]
+  },
+  {
+    "nama": "Nasi Ulam",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "serundeng", "ikan asin", "ketimun"]
+  },
+  {
+    "nama": "Nasi Pecel",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "sayur rebus", "bumbu kacang"]
+  },
+  {
+    "nama": "Nasi Rames Warteg",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "telur", "tempe orek", "sayur"]
+  },
+  {
+    "nama": "Nasi Padang Komplit",
+    "rasa": "Gurih",
+    "bahan": ["nasi", "rendang", "sayur nangka", "sambal hijau"]
+  },
+  {
+    "nama": "Ayam Goreng Lengkuas",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "lengkuas parut", "bawang", "ketumbar"]
+  },
+  {
+    "nama": "Ayam Kecap Manis",
+    "rasa": "Manis",
+    "bahan": ["ayam", "kecap manis", "bawang putih", "jahe"]
+  },
+  {
+    "nama": "Ayam Saus Mentega",
+    "rasa": "Gurih",
+    "bahan": ["ayam fillet", "mentega", "kecap asin", "bawang bombay"]
+  },
+  {
+    "nama": "Ayam Goreng Tepung Krispi",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "tepung bumbu", "telur", "minyak"]
+  },
+  {
+    "nama": "Ayam Goreng Serundeng",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "kelapa parut", "bawang putih", "ketumbar"]
+  },
+  {
+    "nama": "Ayam Rica Kemangi",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "cabai", "kemangi", "bawang merah"]
+  },
+  {
+    "nama": "Ayam Cabe Garam",
+    "rasa": "Pedas",
+    "bahan": ["ayam goreng", "cabai rawit", "bawang putih", "daun bawang"]
+  },
+  {
+    "nama": "Ayam Lada Hitam",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "saus lada hitam", "bawang bombay"]
+  },
+  {
+    "nama": "Ayam Bumbu Bali",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "cabai merah", "bawang", "kemiri"]
+  },
+  {
+    "nama": "Ayam Taliwang",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "cabai kering", "bawang putih", "terasi"]
+  },
+  {
+    "nama": "Tempe Orek Kering",
+    "rasa": "Manis",
+    "bahan": ["tempe", "kecap manis", "gula merah", "cabai"]
+  },
+  {
+    "nama": "Tempe Bacem",
+    "rasa": "Manis",
+    "bahan": ["tempe", "gula merah", "ketumbar", "daun salam"]
+  },
+  {
+    "nama": "Tempe Goreng Tepung",
+    "rasa": "Gurih",
+    "bahan": ["tempe", "tepung terigu", "bawang putih", "ketumbar"]
+  },
+  {
+    "nama": "Tahu Isi Sayur",
+    "rasa": "Gurih",
+    "bahan": ["tahu putih", "wortel", "kol", "seledri"]
+  },
+  {
+    "nama": "Tahu Crispy",
+    "rasa": "Gurih",
+    "bahan": ["tahu", "tepung bumbu", "bawang putih"]
+  },
+  {
+    "nama": "Perkedel Jagung",
+    "rasa": "Gurih",
+    "bahan": ["jagung manis", "tepung terigu", "telur", "daun bawang"]
+  },
+  {
+    "nama": "Perkedel Daging",
+    "rasa": "Gurih",
+    "bahan": ["kentang", "daging cincang", "bawang goreng", "telur"]
+  },
+  {
+    "nama": "Bakwan Sayur",
+    "rasa": "Gurih",
+    "bahan": ["tepung terigu", "wortel", "kol", "daun bawang"]
+  },
+  {
+    "nama": "Bakwan Udang",
+    "rasa": "Gurih",
+    "bahan": ["udang kecil", "tepung", "bawang putih"]
+  },
+  {
+    "nama": "Capcay Goreng",
+    "rasa": "Gurih",
+    "bahan": ["wortel", "brokoli", "kol", "saus tiram"]
+  },
+  {
+    "nama": "Sup Jagung Telur",
+    "rasa": "Gurih",
+    "bahan": ["jagung pipil", "telur", "kaldu ayam", "daun bawang"]
+  },
+  {
+    "nama": "Sup Krim Jamur",
+    "rasa": "Gurih",
+    "bahan": ["jamur", "susu", "mentega", "tepung"]
+  },
+  {
+    "nama": "Sup Tomat",
+    "rasa": "Asam",
+    "bahan": ["tomat", "bawang putih", "kaldu", "gula"]
+  },
+  {
+    "nama": "Sup Sayur Bening",
+    "rasa": "Gurih",
+    "bahan": ["wortel", "buncis", "kol", "bawang putih"]
+  },
+  {
+    "nama": "Tumis Tahu Buncis",
+    "rasa": "Gurih",
+    "bahan": ["tahu", "buncis", "bawang putih", "kecap asin"]
+  },
+  {
+    "nama": "Tumis Teri Kacang",
+    "rasa": "Pedas",
+    "bahan": ["ikan teri", "kacang tanah", "cabai merah", "gula"]
+  },
+  {
+    "nama": "Tumis Jamur Tiram",
+    "rasa": "Gurih",
+    "bahan": ["jamur tiram", "bawang putih", "saus tiram"]
+  },
+  {
+    "nama": "Tumis Buncis Wortel",
+    "rasa": "Gurih",
+    "bahan": ["buncis", "wortel", "bawang putih"]
+  },
+  {
+    "nama": "Ikan Goreng Kunyit",
+    "rasa": "Gurih",
+    "bahan": ["ikan", "kunyit", "bawang putih", "garam"]
+  },
+  {
+    "nama": "Ikan Kuah Asam",
+    "rasa": "Asam",
+    "bahan": ["ikan", "asam jawa", "tomat", "cabai"]
+  },
+  {
+    "nama": "Ikan Sambal Matah",
+    "rasa": "Pedas",
+    "bahan": ["ikan goreng", "bawang merah", "cabai", "serai"]
+  },
+  {
+    "nama": "Ikan Bakar Kecap",
+    "rasa": "Manis",
+    "bahan": ["ikan", "kecap manis", "bawang putih", "jeruk nipis"]
+  },
+  {
+    "nama": "Ikan Goreng Sambal Ijo",
+    "rasa": "Pedas",
+    "bahan": ["ikan", "cabai hijau", "tomat hijau", "bawang"]
+  },
+  {
+    "nama": "Kari Ayam Kentang",
+    "rasa": "Gurih",
+    "bahan": ["ayam", "kentang", "santan", "bumbu kari"]
+  },
+  {
+    "nama": "Kari Sayur",
+    "rasa": "Gurih",
+    "bahan": ["wortel", "kentang", "buncis", "santan"]
+  },
+  {
+    "nama": "Kari Kambing",
+    "rasa": "Gurih",
+    "bahan": ["daging kambing", "santan", "bumbu kari"]
+  },
+  {
+    "nama": "Seblak Kuah Pedas",
+    "rasa": "Pedas",
+    "bahan": ["kerupuk basah", "telur", "cabai", "kencur"]
+  },
+  {
+    "nama": "Seblak Kering",
+    "rasa": "Pedas",
+    "bahan": ["kerupuk kering", "cabai bubuk", "bawang putih"]
+  },
+  {
+    "nama": "Bakso Malang",
+    "rasa": "Gurih",
+    "bahan": ["bakso", "pangsit goreng", "tahu isi", "kaldu"]
+  },
+  {
+    "nama": "Bakso Mercon",
+    "rasa": "Pedas",
+    "bahan": ["bakso", "cabai rawit", "kaldu sapi"]
+  },
+  {
+    "nama": "Sate Taichan",
+    "rasa": "Pedas",
+    "bahan": ["ayam", "jeruk nipis", "cabai rawit", "garam"]
+  },
+  {
+    "nama": "Sate Lilit Bali",
+    "rasa": "Gurih",
+    "bahan": ["ikan giling", "kelapa parut", "bumbu bali"]
+  },
+  {
+    "nama": "Lumpia Goreng",
+    "rasa": "Gurih",
+    "bahan": ["kulit lumpia", "rebung", "wortel", "ayam cincang"]
+  },
+  {
+    "nama": "Pisang Bakar Keju",
+    "rasa": "Manis",
+    "bahan": ["pisang", "keju", "susu kental manis"]
+  },
+  {
+    "nama": "Pisang Cokelat Lumer",
+    "rasa": "Manis",
+    "bahan": ["pisang", "cokelat", "kulit lumpia"]
+  },
+  {
+    "nama": "Roti Bakar Keju Susu",
+    "rasa": "Manis",
+    "bahan": ["roti tawar", "keju", "susu kental manis"]
+  },
+  {
+    "nama": "Martabak Manis Cokelat",
+    "rasa": "Manis",
+    "bahan": ["tepung terigu", "gula", "cokelat meses", "susu"]
+  },
+  {
+    "nama": "Martabak Manis Keju",
+    "rasa": "Manis",
+    "bahan": ["tepung", "gula", "keju", "susu"]
+  },
+  {
+    "nama": "Donat Kentang",
+    "rasa": "Manis",
+    "bahan": ["kentang", "tepung terigu", "gula", "ragi"]
+  },
+  {
+    "nama": "Churros Cokelat",
+    "rasa": "Manis",
+    "bahan": ["tepung", "gula", "mentega", "cokelat leleh"]
+  },
+  {
+    "nama": "Churros Stroberi",
+    "rasa": "Manis",
+    "bahan": ["tepung", "gula", "mentega", "stroberi"]
   }
 ]
