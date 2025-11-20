@@ -28,22 +28,38 @@ CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
 print(f"[INFO] Kamus berhasil dimuat: {len(CACHE_KAMUS)} kata sinonim.")
 
 # --- FUNGSI PENCARI CERDAS (FUZZY LOGIC) ---
+# --- 2. LOGIKA PENCARIAN CERDAS (REVISI TOTAL) ---
 def cek_kemiripan(bahan_user, bahan_resep):
-    # 1. Cek Sinonim dulu
+    # A. Cek Sinonim dari File kamus.json
+    # Pastikan "mi" diubah jadi "mie" (atau standar database Anda)
     bahan_user = CACHE_KAMUS.get(bahan_user, bahan_user)
+    bahan_resep_asli = bahan_resep # Simpan nama asli
     
-    # 2. Cek Exact Match (Cepat)
+    # B. Exact Match (Cepat & Pasti)
     if bahan_user == bahan_resep:
         return True
-        
-    # 3. Cek Fuzzy (Untuk Typo)
-    # Ratio > 80 berarti mirip. Contoh: "bwang" vs "bawang" = 91
-    skor_kemiripan = fuzz.ratio(bahan_user, bahan_resep)
-    if skor_kemiripan > 80:
+
+    # C. Word Boundary Check (Cek per Kata) - SOLUSI MASALAH "MI" vs "MINYAK"
+    # Kita pecah "minyak goreng" menjadi ["minyak", "goreng"]
+    # Kita cek apakah "mi" ada di list itu? Jawabannya TIDAK.
+    # Tapi jika "ayam" vs "daging ayam", "ayam" ada di list.
+    kata_kunci_resep = re.split(r'[,\.\s]+', bahan_resep) # Split jadi list kata
+    if bahan_user in kata_kunci_resep:
         return True
         
-    # 4. Cek Partial (Jika user ketik "ayam", cocok dengan "daging ayam")
-    if bahan_user in bahan_resep or bahan_resep in bahan_user:
+    # D. Fuzzy Match (Typo Tolerance) - Dengan Logika Lebih Ketat
+    # token_sort_ratio: Mengabaikan urutan kata (bawang merah == merah bawang)
+    # tapi TIDAK mencocokkan "mi" dengan "minyak".
+    skor = fuzz.token_sort_ratio(bahan_user, bahan_resep)
+    
+    # Kita pasang standar tinggi (90) agar tidak sembarangan mencocokkan
+    if skor >= 90: 
+        return True
+        
+    # E. Khusus Kata Panjang (Partial Match hanya untuk kata > 3 huruf)
+    # Ini untuk menangani kasus "stroberi" vs "selai stroberi" 
+    # Tanpa memicu "mi" vs "minyak"
+    if len(bahan_user) > 3 and bahan_user in bahan_resep:
         return True
         
     return False
