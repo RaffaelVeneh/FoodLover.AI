@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "DataModels.h"
 #include "FeedbackForm.h"
 using namespace System::IO;
@@ -220,12 +220,12 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			this->txtBahan->Location = System::Drawing::Point(15, 25);
 			this->txtBahan->Multiline = true;
 			this->txtBahan->Name = L"txtBahan";
-			this->txtBahan->Size = System::Drawing::Size(472, 178);
+			this->txtBahan->Size = System::Drawing::Size(571, 178);
 			this->txtBahan->TabIndex = 5;
 			// 
 			// btnFeedback
 			// 
-			this->btnFeedback->Location = System::Drawing::Point(15, 414);
+			this->btnFeedback->Location = System::Drawing::Point(15, 541);
 			this->btnFeedback->Name = L"btnFeedback";
 			this->btnFeedback->Size = System::Drawing::Size(141, 29);
 			this->btnFeedback->TabIndex = 6;
@@ -238,7 +238,7 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			this->treeViewHasil->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9));
 			this->treeViewHasil->Location = System::Drawing::Point(15, 262);
 			this->treeViewHasil->Name = L"treeViewHasil";
-			this->treeViewHasil->Size = System::Drawing::Size(472, 146);
+			this->treeViewHasil->Size = System::Drawing::Size(571, 273);
 			this->treeViewHasil->TabIndex = 7;
 			this->treeViewHasil->NodeMouseDoubleClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &MainForm::treeViewHasil_NodeMouseDoubleClick);
 			// 
@@ -246,7 +246,7 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(499, 503);
+			this->ClientSize = System::Drawing::Size(598, 606);
 			this->Controls->Add(this->treeViewHasil);
 			this->Controls->Add(this->btnFeedback);
 			this->Controls->Add(this->txtBahan);
@@ -267,18 +267,14 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	}
 	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
-		// 1. PERSIAPAN
+
 		this->treeViewHasil->Nodes->Clear();
 		this->treeViewHasil->BeginUpdate();
 
 		String^ rasaInput = this->comboRasa->Text;
 		String^ bahanMentah = this->txtBahan->Text;
 
-		if (String::IsNullOrEmpty(rasaInput)) {
-			this->treeViewHasil->EndUpdate();
-			return;
-		}
-
+		// Kirim data (kosong pun tetap kirim untuk trigger randomizer)
 		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
 		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\" }";
 		String^ url = "http://127.0.0.1:5000/cari";
@@ -296,14 +292,14 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			return;
 		}
 
-		// 2. PARSING JSON (LOGIKA REGEX YANG SUDAH DIPERBAIKI)
 		String^ satuBaris = responseServer->Replace("\r", "")->Replace("\n", "")->Trim();
 		if (satuBaris->StartsWith("[") && satuBaris->EndsWith("]")) {
 			satuBaris = satuBaris->Substring(1, satuBaris->Length - 2);
 		}
 
 		if (String::IsNullOrWhiteSpace(satuBaris)) {
-			this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
+			// Seharusnya ini jarang terjadi karena sekarang ada Randomizer
+			this->treeViewHasil->Nodes->Add("Tidak ada data.");
 			this->treeViewHasil->EndUpdate();
 			return;
 		}
@@ -311,23 +307,22 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 		String^ dataTerpisah = Regex::Replace(satuBaris, "\\}\\s*,\\s*\\{", "}|BATAS|{");
 		array<String^>^ listMenuRaw = dataTerpisah->Split(gcnew array<String^>{"|BATAS|"}, StringSplitOptions::RemoveEmptyEntries);
 
-		bool adaHasil = false;
+		bool pesanDitampilkan = false; // Flag untuk pesan sistem
 
 		for each (String ^ menuString in listMenuRaw) {
 			String^ menuBersih = menuString->Replace("{", "")->Replace("}", "")->Replace("\"", "");
 			array<String^>^ properti = menuBersih->Split(',');
 
-			// Variabel
 			String^ namaMenu = "";
 			String^ skor = "";
 			String^ rasaMenu = "";
 			String^ bahanLengkapStr = "";
 			String^ bahanMatchStr = "";
-
-			// Variabel Metadata Baru
 			String^ metaWaktu = "";
 			String^ metaKategori = "";
 			String^ metaSifat = "";
+			String^ labelAi = "TIDAK";
+			String^ pesanSistem = ""; // Variabel Baru
 
 			for each (String ^ prop in properti) {
 				String^ p = prop->Trim();
@@ -336,42 +331,68 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 				else if (p->StartsWith("skor:")) skor = p->Substring(5)->Trim();
 				else if (p->StartsWith("bahan_lengkap:")) bahanLengkapStr = p->Substring(14)->Trim();
 				else if (p->StartsWith("bahan_match:")) bahanMatchStr = p->Substring(12)->Trim();
-				// Parsing Metadata
 				else if (p->StartsWith("meta_waktu:")) metaWaktu = p->Substring(11)->Trim();
 				else if (p->StartsWith("meta_kategori:")) metaKategori = p->Substring(14)->Trim();
 				else if (p->StartsWith("meta_sifat:")) metaSifat = p->Substring(11)->Trim();
+				else if (p->StartsWith("label_ai:")) labelAi = p->Substring(9)->Trim();
+				// Parsing Pesan Sistem
+				else if (p->StartsWith("pesan_sistem:")) pesanSistem = p->Substring(13)->Trim();
 			}
 
-			// 3. RENDER KE TREEVIEW
-			if (namaMenu != "" && skor != "0") {
-				adaHasil = true;
+			// 1. CEK PESAN SISTEM (Untuk Randomizer)
+			// Tampilkan pesan ini sekali saja di paling atas
+			if (!pesanDitampilkan && !String::IsNullOrEmpty(pesanSistem)) {
+				TreeNode^ nodePesan = gcnew TreeNode(pesanSistem);
+				nodePesan->ForeColor = Color::Red; // Merah agar perhatian
+				nodePesan->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Italic);
+				this->treeViewHasil->Nodes->Add(nodePesan);
+				pesanDitampilkan = true;
+			}
 
-				String^ labelNode = namaMenu + " (" + skor + " Cocok";
-				if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
-				labelNode += ")";
+			// 2. RENDER MENU
+			// Logic: Jika Random, skor 0. Kita tetap tampilkan.
+			if (namaMenu != "") {
 
-				TreeNode^ parentNode = gcnew TreeNode(labelNode);
-				parentNode->ForeColor = Color::DarkBlue;
-				parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+				String^ labelNode = namaMenu;
+				// Hanya tampilkan skor jika bukan hasil random (skor > 0)
+				if (skor != "0") {
+					labelNode += " (" + skor + " Cocok";
+					if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
+					labelNode += ")";
+				}
+				else {
+					// Jika random, mungkin tampilkan info rasa saja
+					labelNode += " (" + rasaMenu + ")";
+				}
 
-				// --- SECTION 1: INFO METADATA (BARU) ---
-				// Kita buat node khusus agar rapi
+				TreeNode^ parentNode = gcnew TreeNode();
+
+				if (labelAi == "YA") {
+					parentNode->Text = "[REKOMENDASI AI] " + labelNode;
+					parentNode->ForeColor = Color::DarkViolet;
+					parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+					parentNode->Expand();
+				}
+				else {
+					parentNode->Text = labelNode;
+					parentNode->ForeColor = Color::DarkBlue;
+					parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+				}
+
+				// Metadata
 				TreeNode^ metaNode = gcnew TreeNode("Info & Konteks");
 				metaNode->ForeColor = Color::DarkMagenta;
-
 				metaNode->Nodes->Add("Kategori: " + metaKategori);
 				metaNode->Nodes->Add("Waktu: " + metaWaktu->Replace("|", ", "));
 				metaNode->Nodes->Add("Sifat: " + metaSifat->Replace("|", ", "));
-
 				parentNode->Nodes->Add(metaNode);
 
-				// --- SECTION 2: BAHAN ---
+				// Bahan
 				TreeNode^ bahanNode = gcnew TreeNode("Rincian Bahan");
 				array<String^>^ listBahan = bahanLengkapStr->Split('|');
-
 				for each (String ^ bahan in listBahan) {
 					TreeNode^ childNode = gcnew TreeNode();
-					if (bahanMatchStr->Contains(bahan)) {
+					if (bahanMatchStr->Contains(bahan) && skor != "0") {
 						childNode->Text = "v " + bahan;
 						childNode->ForeColor = Color::Green;
 						childNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
@@ -388,7 +409,6 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			}
 		}
 
-		if (!adaHasil) this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
 		this->treeViewHasil->EndUpdate();
 	}
 	private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -437,11 +457,14 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			String^ url = "http://127.0.0.1:5000/catat-pilihan";
 			WebClient^ client = gcnew WebClient();
 			client->Headers->Add("Content-Type", "application/json");
+
+			// Kita gunakan Async agar UI tidak nge-lag sedikitpun
 			client->UploadStringAsync(gcnew Uri(url), "POST", jsonLog);
 
-			// Feedback Visual ke User
-			MessageBox::Show("Selamat Menikmati " + namaMenuFix + "!\nAI telah mencatat preferensi Anda.",
-				"Pilihan Disimpan", MessageBoxButtons::OK, MessageBoxIcon::Information);
+			// Feedback Visual Halus (Opsional):
+			// Anda bisa mengubah warna node sebentar atau bunyi 'beep' kecil
+			// Tapi untuk sekarang, kita biarkan benar-benar silent.
+			Console::WriteLine("Log terkirim untuk: " + namaMenuFix);
 		}
 		catch (Exception^ ex) {
 			// Silent error (jangan ganggu user kalau log gagal)
