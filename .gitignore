@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /FoodServer/history.json
+/FoodServer/update_db_v2.py
+/FoodServer/update_db.py
