@@ -265,8 +265,7 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	}
 	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
-
-		// 1. PERSIAPAN UI & DATA
+		// 1. PERSIAPAN
 		this->treeViewHasil->Nodes->Clear();
 		this->treeViewHasil->BeginUpdate();
 
@@ -278,11 +277,8 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			return;
 		}
 
-		// Sanitasi input bahan (Hapus Enter dan kutip)
 		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
 		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\" }";
-
-		// 2. REQUEST KE SERVER
 		String^ url = "http://127.0.0.1:5000/cari";
 		String^ responseServer = "";
 
@@ -298,81 +294,83 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			return;
 		}
 
-		// 3. PARSING JSON TANGGUH (REGEX VERSION)
-		// Server Flask (Debug Mode) mengirim JSON dengan banyak spasi dan Enter (\n).
-		// Contoh: "}, \n  {". Kita harus membersihkannya dulu.
-
-		// A. Hapus semua Baris Baru (Enter) agar string menjadi satu baris panjang
-		String^ satuBaris = responseServer->Replace("\r", "")->Replace("\n", "");
-
-		// B. Hapus kurung siku pembungkus array [ ... ]
-		satuBaris = satuBaris->Trim();
+		// 2. PARSING JSON (LOGIKA REGEX YANG SUDAH DIPERBAIKI)
+		String^ satuBaris = responseServer->Replace("\r", "")->Replace("\n", "")->Trim();
 		if (satuBaris->StartsWith("[") && satuBaris->EndsWith("]")) {
 			satuBaris = satuBaris->Substring(1, satuBaris->Length - 2);
 		}
 
-		// Jika kosong (tidak ada hasil), berhenti
 		if (String::IsNullOrWhiteSpace(satuBaris)) {
 			this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
 			this->treeViewHasil->EndUpdate();
 			return;
 		}
 
-		// C. GUNAKAN REGEX untuk memisahkan objek
-		// Pola: Mencari "}" diikuti spasi berapapun, lalu koma, lalu spasi berapapun, lalu "{"
-		// Kita ubah pola tersebut menjadi tanda pemisah unik "|BATAS|"
 		String^ dataTerpisah = Regex::Replace(satuBaris, "\\}\\s*,\\s*\\{", "}|BATAS|{");
-
-		// D. Split string berdasarkan tanda unik tadi
 		array<String^>^ listMenuRaw = dataTerpisah->Split(gcnew array<String^>{"|BATAS|"}, StringSplitOptions::RemoveEmptyEntries);
 
 		bool adaHasil = false;
 
-		for each(String ^ menuString in listMenuRaw) {
-			// Bersihkan karakter JSON ({, }, ") yang tersisa
+		for each (String ^ menuString in listMenuRaw) {
 			String^ menuBersih = menuString->Replace("{", "")->Replace("}", "")->Replace("\"", "");
-
-			// Split properti berdasarkan koma
 			array<String^>^ properti = menuBersih->Split(',');
 
+			// Variabel
 			String^ namaMenu = "";
 			String^ skor = "";
 			String^ rasaMenu = "";
 			String^ bahanLengkapStr = "";
 			String^ bahanMatchStr = "";
 
-			for each(String ^ prop in properti) {
+			// Variabel Metadata Baru
+			String^ metaWaktu = "";
+			String^ metaKategori = "";
+			String^ metaSifat = "";
+
+			for each (String ^ prop in properti) {
 				String^ p = prop->Trim();
 				if (p->StartsWith("nama:")) namaMenu = p->Substring(5)->Trim();
 				else if (p->StartsWith("rasa:")) rasaMenu = p->Substring(5)->Trim();
 				else if (p->StartsWith("skor:")) skor = p->Substring(5)->Trim();
 				else if (p->StartsWith("bahan_lengkap:")) bahanLengkapStr = p->Substring(14)->Trim();
 				else if (p->StartsWith("bahan_match:")) bahanMatchStr = p->Substring(12)->Trim();
+				// Parsing Metadata
+				else if (p->StartsWith("meta_waktu:")) metaWaktu = p->Substring(11)->Trim();
+				else if (p->StartsWith("meta_kategori:")) metaKategori = p->Substring(14)->Trim();
+				else if (p->StartsWith("meta_sifat:")) metaSifat = p->Substring(11)->Trim();
 			}
 
-			// 4. RENDER HASIL
+			// 3. RENDER KE TREEVIEW
 			if (namaMenu != "" && skor != "0") {
 				adaHasil = true;
 
-				// Format Label dengan Info Rasa (Sesuai Request)
 				String^ labelNode = namaMenu + " (" + skor + " Cocok";
-				if (rasaInput == "Semua") {
-					labelNode += ", Rasa: " + rasaMenu;
-				}
+				if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
 				labelNode += ")";
 
 				TreeNode^ parentNode = gcnew TreeNode(labelNode);
 				parentNode->ForeColor = Color::DarkBlue;
 				parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
 
-				// Render Bahan
-				array<String^>^ listBahan = bahanLengkapStr->Split('|');
-				for each(String ^ bahan in listBahan) {
-					TreeNode^ childNode = gcnew TreeNode();
+				// --- SECTION 1: INFO METADATA (BARU) ---
+				// Kita buat node khusus agar rapi
+				TreeNode^ metaNode = gcnew TreeNode("Info & Konteks");
+				metaNode->ForeColor = Color::DarkMagenta;
 
-					// Cek Match
+				metaNode->Nodes->Add("Kategori: " + metaKategori);
+				metaNode->Nodes->Add("Waktu: " + metaWaktu->Replace("|", ", "));
+				metaNode->Nodes->Add("Sifat: " + metaSifat->Replace("|", ", "));
+
+				parentNode->Nodes->Add(metaNode);
+
+				// --- SECTION 2: BAHAN ---
+				TreeNode^ bahanNode = gcnew TreeNode("Rincian Bahan");
+				array<String^>^ listBahan = bahanLengkapStr->Split('|');
+
+				for each (String ^ bahan in listBahan) {
+					TreeNode^ childNode = gcnew TreeNode();
 					if (bahanMatchStr->Contains(bahan)) {
-						childNode->Text = "v " + bahan; // Checklist
+						childNode->Text = "v " + bahan;
 						childNode->ForeColor = Color::Green;
 						childNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
 					}
@@ -380,17 +378,15 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 						childNode->Text = "- " + bahan;
 						childNode->ForeColor = Color::Gray;
 					}
-					parentNode->Nodes->Add(childNode);
+					bahanNode->Nodes->Add(childNode);
 				}
+				parentNode->Nodes->Add(bahanNode);
 
 				this->treeViewHasil->Nodes->Add(parentNode);
 			}
 		}
 
-		if (!adaHasil) {
-			this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
-		}
-
+		if (!adaHasil) this->treeViewHasil->Nodes->Add("Tidak ada resep yang cocok.");
 		this->treeViewHasil->EndUpdate();
 	}
 	private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {

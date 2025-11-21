@@ -100,12 +100,24 @@ def cari_resep():
                         break 
             
             if skor > 0:
+                meta = menu.get('metadata', {})
+                
+                # Ambil data, jika list maka join pakai '|', jika string biarkan
+                waktu_str = "|".join(meta.get('waktu', ['kapanpun']))
+                kategori_str = meta.get('kategori', 'umum')
+                sifat_str = "|".join(meta.get('sifat', ['umum']))
+
                 hasil_sementara.append({
                     "nama": menu['nama'],
                     "rasa": menu.get('rasa', 'Umum'),
                     "skor": skor,
                     "bahan_lengkap": "|".join(semua_bahan_resep),
-                    "bahan_match": "|".join(bahan_cocok_list)
+                    "bahan_match": "|".join(bahan_cocok_list),
+                    
+                    # Field Baru untuk dikirim ke C++
+                    "meta_waktu": waktu_str,
+                    "meta_kategori": kategori_str,
+                    "meta_sifat": sifat_str
                 })
 
     hasil_final = sorted(hasil_sementara, key=lambda x: x['skor'], reverse=True)
