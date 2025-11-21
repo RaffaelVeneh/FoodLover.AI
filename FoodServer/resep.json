@@ -2,751 +2,1542 @@
   {
     "nama": "Nasi Goreng Pedas",
     "rasa": "Pedas",
-    "bahan": ["nasi", "telur", "kecap", "cabai"],
+    "bahan": [
+      "nasi",
+      "telur",
+      "kecap",
+      "cabai"
+    ],
     "metadata": {
-      "waktu": ["malam", "pagi"],
-      "kategori": "berat",
-      "sifat": ["goreng", "kering"]
+      "waktu": [
+        "malam",
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "kering"
+      ]
     }
   },
   {
     "nama": "Telur Dadar Gurih",
     "rasa": "Gurih",
-    "bahan": ["telur", "garam", "daun bawang"],
+    "bahan": [
+      "telur",
+      "garam",
+      "daun bawang"
+    ],
     "metadata": {
-      "waktu": ["pagi", "siang", "malam"],
-      "kategori": "lauk",
-      "sifat": ["goreng", "kering"]
+      "waktu": [
+        "pagi",
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "kering"
+      ]
     }
   },
   {
     "nama": "Pisang Goreng Manis",
     "rasa": "Manis",
-    "bahan": ["pisang", "tepung", "gula"],
+    "bahan": [
+      "pisang",
+      "tepung",
+      "gula"
+    ],
     "metadata": {
-      "waktu": ["sore", "pagi"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "kering"]
+      "waktu": [
+        "sore",
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "kering"
+      ]
     }
   },
   {
     "nama": "Ayam Rica-Rica",
     "rasa": "Pedas",
-    "bahan": ["ayam", "cabai", "bawang"],
+    "bahan": [
+      "ayam",
+      "cabai",
+      "bawang"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "lauk",
-      "sifat": ["basah", "pedas"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Sayur Asem Segar",
     "rasa": "Asam",
-    "bahan": ["melinjo", "labu siam", "kacang panjang", "asem jawa"],
+    "bahan": [
+      "melinjo",
+      "labu siam",
+      "kacang panjang",
+      "asem jawa"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "sayur",
-      "sifat": ["kuah", "segar"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "segar"
+      ]
     }
   },
   {
     "nama": "Sate Ayam Madura",
     "rasa": "Gurih",
-    "bahan": ["ayam", "kecap", "kacang", "bawang"],
+    "bahan": [
+      "ayam",
+      "kecap",
+      "kacang",
+      "bawang"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["bakar", "kering"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "bakar",
+        "kering"
+      ]
     }
   },
   {
     "nama": "Gado-Gado Betawi",
     "rasa": "Gurih",
-    "bahan": ["sayuran", "lontong", "telur", "kacang"],
+    "bahan": [
+      "sayuran",
+      "lontong",
+      "telur",
+      "kacang"
+    ],
     "metadata": {
-      "waktu": ["siang", "pagi"],
-      "kategori": "berat",
-      "sifat": ["basah", "kacang"]
+      "waktu": [
+        "siang",
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "kacang"
+      ]
     }
   },
   {
     "nama": "Kolak Pisang Ubi",
     "rasa": "Manis",
-    "bahan": ["pisang", "ubi", "gula merah", "santan"],
+    "bahan": [
+      "pisang",
+      "ubi",
+      "gula merah",
+      "santan"
+    ],
     "metadata": {
-      "waktu": ["sore"],
-      "kategori": "ringan",
-      "sifat": ["kuah", "santan"]
+      "waktu": [
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Soto Ayam Bening",
     "rasa": "Gurih",
-    "bahan": ["ayam", "soun", "kentang", "bumbu soto"],
+    "bahan": [
+      "ayam",
+      "soun",
+      "kentang",
+      "bumbu soto"
+    ],
     "metadata": {
-      "waktu": ["pagi", "siang"],
-      "kategori": "berat",
-      "sifat": ["kuah", "hangat"]
+      "waktu": [
+        "pagi",
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "hangat"
+      ]
     }
   },
   {
     "nama": "Rendang Sapi Padang",
     "rasa": "Gurih",
-    "bahan": ["daging sapi", "santan", "cabai", "rempah-rempah"],
+    "bahan": [
+      "daging sapi",
+      "santan",
+      "cabai",
+      "rempah-rempah"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["basah", "santan", "awet"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "santan",
+        "awet"
+      ]
     }
   },
   {
     "nama": "Pepes Ikan Mas",
-    "rasa": "Gurih",
-    "bahan": ["ikan mas", "daun kemangi", "bumbu kuning", "daun pisang"],
+    "rasa": "Segar",
+    "bahan": [
+      "ikan mas",
+      "daun kemangi",
+      "bumbu kuning",
+      "daun pisang"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "lauk",
-      "sifat": ["kukus", "basah"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "minuman",
+      "sifat": [
+        "kukus",
+        "basah"
+      ]
     }
   },
   {
     "nama": "Tempe Mendoan",
     "rasa": "Gurih",
-    "bahan": ["tempe", "tepung", "daun bawang", "ketumbar"],
+    "bahan": [
+      "tempe",
+      "tepung",
+      "daun bawang",
+      "ketumbar"
+    ],
     "metadata": {
-      "waktu": ["sore", "malam"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "berminyak"]
+      "waktu": [
+        "sore",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "berminyak"
+      ]
     }
   },
   {
     "nama": "Klepon Gula Merah",
     "rasa": "Manis",
-    "bahan": ["tepung ketan", "gula merah", "kelapa parut", "pandan"],
+    "bahan": [
+      "tepung ketan",
+      "gula merah",
+      "kelapa parut",
+      "pandan"
+    ],
     "metadata": {
-      "waktu": ["pagi", "sore"],
-      "kategori": "ringan",
-      "sifat": ["basah", "jajanan pasar"]
+      "waktu": [
+        "pagi",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "jajanan pasar"
+      ]
     }
   },
   {
     "nama": "Pecel Lele Sambal",
     "rasa": "Pedas",
-    "bahan": ["ikan lele", "sambal terasi", "timun", "kemangi"],
+    "bahan": [
+      "ikan lele",
+      "sambal terasi",
+      "timun",
+      "kemangi"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["goreng", "pedas"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Lumpia Semarang",
     "rasa": "Gurih",
-    "bahan": ["rebung", "udang", "telur", "kulit lumpia"],
+    "bahan": [
+      "rebung",
+      "udang",
+      "telur",
+      "kulit lumpia"
+    ],
     "metadata": {
-      "waktu": ["sore"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "kering"]
+      "waktu": [
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "kering"
+      ]
     }
   },
   {
     "nama": "Rawon Setan Surabaya",
     "rasa": "Gurih",
-    "bahan": ["daging sapi", "kluwek", "tauge", "daun bawang"],
+    "bahan": [
+      "daging sapi",
+      "kluwek",
+      "tauge",
+      "daun bawang"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["kuah", "hitam"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "hitam"
+      ]
     }
   },
   {
     "nama": "Seblak Jeletot",
     "rasa": "Pedas",
-    "bahan": ["kerupuk basah", "cabai rawit", "telur", "kencur"],
+    "bahan": [
+      "kerupuk basah",
+      "cabai rawit",
+      "telur",
+      "kencur"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
-      "kategori": "ringan",
-      "sifat": ["kuah", "pedas"]
+      "waktu": [
+        "siang",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Pempek Kapal Selam",
     "rasa": "Gurih",
-    "bahan": ["ikan tenggiri", "sagu", "telur utuh", "cuko"],
+    "bahan": [
+      "ikan tenggiri",
+      "sagu",
+      "telur utuh",
+      "cuko"
+    ],
     "metadata": {
-      "waktu": ["sore", "malam"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "asam pedas"]
+      "waktu": [
+        "sore",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "asam pedas"
+      ]
     }
   },
   {
     "nama": "Martabak Telur Spesial",
     "rasa": "Gurih",
-    "bahan": ["kulit martabak", "telur bebek", "daging cincang", "daun bawang"],
+    "bahan": [
+      "kulit martabak",
+      "telur bebek",
+      "daging cincang",
+      "daun bawang"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "berminyak"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "berminyak"
+      ]
     }
   },
   {
     "nama": "Cendol",
     "rasa": "Manis",
-    "bahan": ["santan", "gula", "jawa", "cendol"],
+    "bahan": [
+      "santan",
+      "gula",
+      "jawa",
+      "cendol"
+    ],
     "metadata": {
-      "waktu": ["siang"],
+      "waktu": [
+        "siang"
+      ],
       "kategori": "minuman",
-      "sifat": ["dingin", "segar"]
+      "sifat": [
+        "dingin",
+        "segar"
+      ]
     }
   },
   {
     "nama": "Bakso Urat Spesial",
     "rasa": "Gurih",
-    "bahan": ["bakso", "kaldu sapi", "bawang goreng", "seledri"],
+    "bahan": [
+      "bakso",
+      "kaldu sapi",
+      "bawang goreng",
+      "seledri"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
-      "kategori": "berat",
-      "sifat": ["kuah", "hangat"]
+      "waktu": [
+        "siang",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "hangat"
+      ]
     }
   },
   {
     "nama": "Mie Aceh Pedas",
     "rasa": "Pedas",
-    "bahan": ["mie", "daging sapi", "cabai", "rempah-rempah"],
+    "bahan": [
+      "mie",
+      "daging sapi",
+      "cabai",
+      "rempah-rempah"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["goreng", "basah", "pedas"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "basah",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Tahu Gejrot Cirebon",
     "rasa": "Asam",
-    "bahan": ["tahu", "gula merah", "asam jawa", "cabai"],
+    "bahan": [
+      "tahu",
+      "gula merah",
+      "asam jawa",
+      "cabai"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
-      "kategori": "ringan",
-      "sifat": ["basah", "asam pedas"]
+      "waktu": [
+        "siang",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "asam pedas"
+      ]
     }
   },
   {
     "nama": "Soto Betawi Santan",
     "rasa": "Gurih",
-    "bahan": ["daging sapi", "santan", "bawang", "kentang"],
+    "bahan": [
+      "daging sapi",
+      "santan",
+      "bawang",
+      "kentang"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "berat",
-      "sifat": ["kuah", "santan"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Kerak Telor Betawi",
     "rasa": "Gurih",
-    "bahan": ["telur bebek", "beras ketan", "ebi", "kelapa sangrai"],
+    "bahan": [
+      "telur bebek",
+      "beras ketan",
+      "ebi",
+      "kelapa sangrai"
+    ],
     "metadata": {
-      "waktu": ["sore", "malam"],
-      "kategori": "ringan",
-      "sifat": ["kering", "bakar"]
+      "waktu": [
+        "sore",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kering",
+        "bakar"
+      ]
     }
   },
   {
     "nama": "Nasi Uduk Betawi",
     "rasa": "Gurih",
-    "bahan": ["beras", "santan", "serai", "daun salam"],
+    "bahan": [
+      "beras",
+      "santan",
+      "serai",
+      "daun salam"
+    ],
     "metadata": {
-      "waktu": ["pagi", "malam"],
-      "kategori": "berat",
-      "sifat": ["nasi", "santan"]
+      "waktu": [
+        "pagi",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "nasi",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Sop Buntut",
     "rasa": "Gurih",
-    "bahan": ["buntut sapi", "wortel", "kentang", "seledri"],
+    "bahan": [
+      "buntut sapi",
+      "wortel",
+      "kentang",
+      "seledri"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["kuah", "mewah"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "mewah"
+      ]
     }
   },
   {
     "nama": "Ayam Woku",
     "rasa": "Pedas",
-    "bahan": ["ayam", "kemangi", "cabai", "tomat"],
+    "bahan": [
+      "ayam",
+      "kemangi",
+      "cabai",
+      "tomat"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "lauk",
-      "sifat": ["basah", "pedas"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Batagor Bandung",
     "rasa": "Gurih",
-    "bahan": ["ikan tenggiri", "tepung tapioka", "kacang", "kecap"],
+    "bahan": [
+      "ikan tenggiri",
+      "tepung tapioka",
+      "kacang",
+      "kecap"
+    ],
     "metadata": {
-      "waktu": ["sore", "malam"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "bumbu kacang"]
+      "waktu": [
+        "sore",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "bumbu kacang"
+      ]
     }
   },
   {
     "nama": "Ayam Pop Padang",
     "rasa": "Gurih",
-    "bahan": ["ayam", "bawang putih", "jeruk nipis", "garam"],
+    "bahan": [
+      "ayam",
+      "bawang putih",
+      "jeruk nipis",
+      "garam"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "lauk",
-      "sifat": ["basah", "santan"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Bandeng Presto",
     "rasa": "Gurih",
-    "bahan": ["ikan bandeng", "kunyit", "bawang", "daun salam"],
+    "bahan": [
+      "ikan bandeng",
+      "kunyit",
+      "bawang",
+      "daun salam"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "lauk",
-      "sifat": ["goreng", "duri lunak"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "duri lunak"
+      ]
     }
   },
   {
     "nama": "Bakmi Jawa",
     "rasa": "Gurih",
-    "bahan": ["mie", "ayam suwir", "bawang", "kaldu ayam"],
+    "bahan": [
+      "mie",
+      "ayam suwir",
+      "bawang",
+      "kaldu ayam"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["rebus", "hangat"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "rebus",
+        "hangat"
+      ]
     }
   },
   {
     "nama": "Opor Ayam",
     "rasa": "Gurih",
-    "bahan": ["ayam", "santan", "kunyit", "serai"],
+    "bahan": [
+      "ayam",
+      "santan",
+      "kunyit",
+      "serai"
+    ],
     "metadata": {
-      "waktu": ["pagi", "siang"],
-      "kategori": "berat",
-      "sifat": ["kuah", "santan"]
+      "waktu": [
+        "pagi",
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Capcay Kuah",
     "rasa": "Gurih",
-    "bahan": ["wortel", "kol", "brokoli", "bawang"],
+    "bahan": [
+      "wortel",
+      "kol",
+      "brokoli",
+      "bawang"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "sayur",
-      "sifat": ["kuah", "sehat"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "sehat"
+      ]
     }
   },
   {
     "nama": "Ramen Pedas Jepang",
     "rasa": "Pedas",
-    "bahan": ["mie ramen", "kaldu", "cabai", "telur"],
+    "bahan": [
+      "mie ramen",
+      "kaldu",
+      "cabai",
+      "telur"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["kuah", "pedas"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Sandwich Telur",
     "rasa": "Gurih",
-    "bahan": ["roti", "telur", "mayonnaise", "garam"],
+    "bahan": [
+      "roti",
+      "telur",
+      "mayonnaise",
+      "garam"
+    ],
     "metadata": {
-      "waktu": ["pagi"],
-      "kategori": "ringan",
-      "sifat": ["kering", "praktis"]
+      "waktu": [
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kering",
+        "praktis"
+      ]
     }
   },
   {
     "nama": "Bubur Ayam",
     "rasa": "Gurih",
-    "bahan": ["beras", "ayam suwir", "kecap", "cakwe"],
+    "bahan": [
+      "beras",
+      "ayam suwir",
+      "kecap",
+      "cakwe"
+    ],
     "metadata": {
-      "waktu": ["pagi", "malam"],
-      "kategori": "berat",
-      "sifat": ["kuah", "hangat"]
+      "waktu": [
+        "pagi",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "hangat"
+      ]
     }
   },
   {
     "nama": "Es Teh Manis",
-    "rasa": "Manis",
-    "bahan": ["teh", "gula", "es"],
+    "rasa": "Segar",
+    "bahan": [
+      "teh",
+      "gula",
+      "es"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
+      "waktu": [
+        "siang",
+        "sore"
+      ],
       "kategori": "minuman",
-      "sifat": ["dingin", "cair"]
+      "sifat": [
+        "dingin",
+        "cair"
+      ]
     }
   },
   {
     "nama": "Nasi Goreng Gila",
     "rasa": "Pedas",
-    "bahan": ["nasi", "sosis", "bakso", "cabai"],
+    "bahan": [
+      "nasi",
+      "sosis",
+      "bakso",
+      "cabai"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["goreng", "pedas"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Nasi Pecel",
     "rasa": "Gurih",
-    "bahan": ["nasi", "sayur rebus", "bumbu kacang"],
+    "bahan": [
+      "nasi",
+      "sayur rebus",
+      "bumbu kacang"
+    ],
     "metadata": {
-      "waktu": ["pagi"],
-      "kategori": "berat",
-      "sifat": ["sayur", "bumbu kacang"]
+      "waktu": [
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "sayur",
+        "bumbu kacang"
+      ]
     }
   },
   {
     "nama": "Ayam Geprek",
     "rasa": "Pedas",
-    "bahan": ["ayam crispy", "cabai rawit", "bawang putih"],
+    "bahan": [
+      "ayam crispy",
+      "cabai rawit",
+      "bawang putih"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "berat",
-      "sifat": ["goreng", "pedas"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Gudeg Jogja",
     "rasa": "Manis",
-    "bahan": ["nangka muda", "gula merah", "santan", "daun salam"],
+    "bahan": [
+      "nangka muda",
+      "gula merah",
+      "santan",
+      "daun salam"
+    ],
     "metadata": {
-      "waktu": ["pagi", "siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["basah", "manis"]
+      "waktu": [
+        "pagi",
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "manis"
+      ]
     }
   },
   {
     "nama": "Indomie Goreng Telur",
     "rasa": "Gurih",
-    "bahan": ["mie instan", "telur", "kecap"],
+    "bahan": [
+      "mie instan",
+      "telur",
+      "kecap"
+    ],
     "metadata": {
-      "waktu": ["malam", "pagi"],
-      "kategori": "berat",
-      "sifat": ["goreng", "instan"]
+      "waktu": [
+        "malam",
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "instan"
+      ]
     }
   },
   {
     "nama": "Roti Bakar Cokelat",
     "rasa": "Manis",
-    "bahan": ["roti", "cokelat meses", "mentega"],
+    "bahan": [
+      "roti",
+      "cokelat meses",
+      "mentega"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "ringan",
-      "sifat": ["bakar", "manis"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "camilan",
+      "sifat": [
+        "bakar",
+        "manis"
+      ]
     }
   },
   {
     "nama": "Tempe Bacem",
     "rasa": "Manis",
-    "bahan": ["tempe", "gula merah", "ketumbar", "daun salam"],
+    "bahan": [
+      "tempe",
+      "gula merah",
+      "ketumbar",
+      "daun salam"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
-      "kategori": "lauk",
-      "sifat": ["basah", "manis"]
+      "waktu": [
+        "siang",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "basah",
+        "manis"
+      ]
     }
   },
   {
     "nama": "Nasi Kuning",
     "rasa": "Gurih",
-    "bahan": ["beras", "kunyit", "santan", "serai"],
+    "bahan": [
+      "beras",
+      "kunyit",
+      "santan",
+      "serai"
+    ],
     "metadata": {
-      "waktu": ["pagi"],
-      "kategori": "berat",
-      "sifat": ["nasi", "santan"]
+      "waktu": [
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "nasi",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Spaghetti Bolognese",
     "rasa": "Gurih",
-    "bahan": ["spaghetti", "daging cincang", "tomat", "bawang"],
+    "bahan": [
+      "spaghetti",
+      "daging cincang",
+      "tomat",
+      "bawang"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["pasta", "western"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "pasta",
+        "western"
+      ]
     }
   },
   {
     "nama": "Chicken Katsu",
     "rasa": "Gurih",
-    "bahan": ["ayam fillet", "tepung roti", "telur"],
+    "bahan": [
+      "ayam fillet",
+      "tepung roti",
+      "telur"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "lauk",
-      "sifat": ["goreng", "kering", "jepang"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "kering",
+        "jepang"
+      ]
     }
   },
   {
     "nama": "Nasi Padang Komplit",
     "rasa": "Gurih",
-    "bahan": ["nasi", "rendang", "sayur nangka", "sambal hijau"],
+    "bahan": [
+      "nasi",
+      "rendang",
+      "sayur nangka",
+      "sambal hijau"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "berat",
-      "sifat": ["santan", "pedas", "berminyak"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "santan",
+        "pedas",
+        "berminyak"
+      ]
     }
   },
   {
     "nama": "Tongseng Kambing",
     "rasa": "Pedas",
-    "bahan": ["kambing", "kubis", "cabai", "santan"],
+    "bahan": [
+      "kambing",
+      "kubis",
+      "cabai",
+      "santan"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["kuah", "santan", "pedas"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "santan",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Ketoprak Jakarta",
     "rasa": "Gurih",
-    "bahan": ["ketupat", "tahu", "kecambah", "bumbu kacang"],
+    "bahan": [
+      "ketupat",
+      "tahu",
+      "kecambah",
+      "bumbu kacang"
+    ],
     "metadata": {
-      "waktu": ["pagi", "siang"],
-      "kategori": "berat",
-      "sifat": ["kacang", "basah"]
+      "waktu": [
+        "pagi",
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kacang",
+        "basah"
+      ]
     }
   },
   {
     "nama": "Lontong Sayur",
     "rasa": "Gurih",
-    "bahan": ["lontong", "labu siam", "santan"],
+    "bahan": [
+      "lontong",
+      "labu siam",
+      "santan"
+    ],
     "metadata": {
-      "waktu": ["pagi"],
-      "kategori": "berat",
-      "sifat": ["kuah", "santan"]
+      "waktu": [
+        "pagi"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Tteokbokki",
     "rasa": "Pedas",
-    "bahan": ["rice cake", "gochujang", "gula", "kaldu"],
+    "bahan": [
+      "rice cake",
+      "gochujang",
+      "gula",
+      "kaldu"
+    ],
     "metadata": {
-      "waktu": ["sore", "malam"],
-      "kategori": "ringan",
-      "sifat": ["korea", "pedas", "basah"]
+      "waktu": [
+        "sore",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "korea",
+        "pedas",
+        "basah"
+      ]
     }
   },
   {
     "nama": "Beef Burger",
     "rasa": "Gurih",
-    "bahan": ["roti burger", "daging", "keju", "selada"],
+    "bahan": [
+      "roti burger",
+      "daging",
+      "keju",
+      "selada"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["roti", "western"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "roti",
+        "western"
+      ]
     }
   },
   {
     "nama": "French Fries",
     "rasa": "Gurih",
-    "bahan": ["kentang", "garam", "minyak"],
+    "bahan": [
+      "kentang",
+      "garam",
+      "minyak"
+    ],
     "metadata": {
-      "waktu": ["sore", "malam"],
-      "kategori": "ringan",
-      "sifat": ["goreng", "kering"]
+      "waktu": [
+        "sore",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "kering"
+      ]
     }
   },
   {
     "nama": "Es Cincau",
-    "rasa": "Manis",
-    "bahan": ["cincau", "gula cair", "santan"],
+    "rasa": "Segar",
+    "bahan": [
+      "cincau",
+      "gula cair",
+      "santan"
+    ],
     "metadata": {
-      "waktu": ["siang"],
+      "waktu": [
+        "siang"
+      ],
       "kategori": "minuman",
-      "sifat": ["dingin", "segar"]
+      "sifat": [
+        "dingin",
+        "segar"
+      ]
     }
   },
   {
     "nama": "Jus Alpukat",
     "rasa": "Manis",
-    "bahan": ["alpukat", "susu kental manis", "es"],
+    "bahan": [
+      "alpukat",
+      "susu kental manis",
+      "es"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
+      "waktu": [
+        "siang",
+        "sore"
+      ],
       "kategori": "minuman",
-      "sifat": ["dingin", "kental"]
+      "sifat": [
+        "dingin",
+        "kental"
+      ]
     }
   },
   {
     "nama": "Ayam Bakar Padang",
     "rasa": "Pedas",
-    "bahan": ["ayam", "cabai", "bawang", "santan"],
+    "bahan": [
+      "ayam",
+      "cabai",
+      "bawang",
+      "santan"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "lauk",
-      "sifat": ["bakar", "pedas"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "bakar",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Sayur Lodeh",
     "rasa": "Gurih",
-    "bahan": ["labu siam", "santan", "kacang panjang", "tempe"],
+    "bahan": [
+      "labu siam",
+      "santan",
+      "kacang panjang",
+      "tempe"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "sayur",
-      "sifat": ["kuah", "santan"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "santan"
+      ]
     }
   },
   {
     "nama": "Sayur Bayam",
     "rasa": "Gurih",
-    "bahan": ["bayam", "bawang", "kaldu", "jagung"],
+    "bahan": [
+      "bayam",
+      "bawang",
+      "kaldu",
+      "jagung"
+    ],
     "metadata": {
-      "waktu": ["pagi", "siang"],
-      "kategori": "sayur",
-      "sifat": ["kuah", "bening", "sehat"]
+      "waktu": [
+        "pagi",
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "bening",
+        "sehat"
+      ]
     }
   },
   {
     "nama": "Sambal Matah Bali",
     "rasa": "Pedas",
-    "bahan": ["cabai rawit", "bawang merah", "serai", "jeruk limau"],
+    "bahan": [
+      "cabai rawit",
+      "bawang merah",
+      "serai",
+      "jeruk limau"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "pelengkap",
-      "sifat": ["mentah", "pedas", "segar"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "mentah",
+        "pedas",
+        "segar"
+      ]
     }
   },
   {
     "nama": "Tom Yum Thailand",
     "rasa": "Asam",
-    "bahan": ["udang", "jeruk nipis", "cabai", "serai"],
+    "bahan": [
+      "udang",
+      "jeruk nipis",
+      "cabai",
+      "serai"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["kuah", "asam pedas", "thailand"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kuah",
+        "asam pedas",
+        "thailand"
+      ]
     }
   },
   {
     "nama": "Pancake Cokelat",
     "rasa": "Manis",
-    "bahan": ["tepung", "cokelat", "susu", "telur"],
+    "bahan": [
+      "tepung",
+      "cokelat",
+      "susu",
+      "telur"
+    ],
     "metadata": {
-      "waktu": ["pagi", "sore"],
-      "kategori": "ringan",
-      "sifat": ["western", "manis"]
+      "waktu": [
+        "pagi",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "western",
+        "manis"
+      ]
     }
   },
   {
     "nama": "Brownies Panggang",
-    "rasa": "Manis",
-    "bahan": ["cokelat", "tepung", "gula", "telur"],
+    "rasa": "Segar",
+    "bahan": [
+      "cokelat",
+      "tepung",
+      "gula",
+      "telur"
+    ],
     "metadata": {
-      "waktu": ["sore"],
-      "kategori": "ringan",
-      "sifat": ["kue", "manis"]
+      "waktu": [
+        "sore"
+      ],
+      "kategori": "minuman",
+      "sifat": [
+        "kue",
+        "manis"
+      ]
     }
   },
   {
     "nama": "Milkshake Strawberry",
     "rasa": "Manis",
-    "bahan": ["susu", "stroberi", "gula"],
+    "bahan": [
+      "susu",
+      "stroberi",
+      "gula"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
+      "waktu": [
+        "siang",
+        "sore"
+      ],
       "kategori": "minuman",
-      "sifat": ["dingin", "susu"]
+      "sifat": [
+        "dingin",
+        "susu"
+      ]
     }
   },
   {
     "nama": "Nasi Rames Warteg",
-    "rasa": "Gurih",
-    "bahan": ["nasi", "telur", "tempe orek", "sayur"],
+    "rasa": "Segar",
+    "bahan": [
+      "nasi",
+      "telur",
+      "tempe orek",
+      "sayur"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["campur", "murah"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "minuman",
+      "sifat": [
+        "campur",
+        "murah"
+      ]
     }
   },
   {
     "nama": "Tempe Orek Kering",
     "rasa": "Manis",
-    "bahan": ["tempe", "kecap manis", "gula merah", "cabai"],
+    "bahan": [
+      "tempe",
+      "kecap manis",
+      "gula merah",
+      "cabai"
+    ],
     "metadata": {
-      "waktu": ["siang"],
-      "kategori": "lauk",
-      "sifat": ["kering", "awet"]
+      "waktu": [
+        "siang"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "kering",
+        "awet"
+      ]
     }
   },
   {
     "nama": "Perkedel Jagung",
     "rasa": "Gurih",
-    "bahan": ["jagung manis", "tepung terigu", "telur", "daun bawang"],
+    "bahan": [
+      "jagung manis",
+      "tepung terigu",
+      "telur",
+      "daun bawang"
+    ],
     "metadata": {
-      "waktu": ["siang", "sore"],
-      "kategori": "lauk",
-      "sifat": ["goreng", "basah"]
+      "waktu": [
+        "siang",
+        "sore"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "goreng",
+        "basah"
+      ]
     }
   },
   {
     "nama": "Cah Kangkung",
     "rasa": "Gurih",
-    "bahan": ["kangkung", "bawang putih", "saus tiram"],
+    "bahan": [
+      "kangkung",
+      "bawang putih",
+      "saus tiram"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "sayur",
-      "sifat": ["tumis", "basah"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "tumis",
+        "basah"
+      ]
     }
   },
   {
     "nama": "Sup Krim Jamur",
     "rasa": "Gurih",
-    "bahan": ["jamur", "susu", "mentega", "tepung"],
+    "bahan": [
+      "jamur",
+      "susu",
+      "mentega",
+      "tepung"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "ringan",
-      "sifat": ["western", "creamy", "hangat"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "western",
+        "creamy",
+        "hangat"
+      ]
     }
   },
   {
     "nama": "Ikan Bakar Jimbaran",
     "rasa": "Gurih",
-    "bahan": ["ikan kakap", "jeruk limau", "bawang", "kecap"],
+    "bahan": [
+      "ikan kakap",
+      "jeruk limau",
+      "bawang",
+      "kecap"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["bakar", "seafood"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "bakar",
+        "seafood"
+      ]
     }
   },
   {
     "nama": "Ayam Teriyaki",
     "rasa": "Manis",
-    "bahan": ["ayam", "kecap manis", "bawang bombay"],
+    "bahan": [
+      "ayam",
+      "kecap manis",
+      "bawang bombay"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "lauk",
-      "sifat": ["jepang", "manis"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "jepang",
+        "manis"
+      ]
     }
   },
   {
     "nama": "Kimchi Jjigae",
     "rasa": "Pedas",
-    "bahan": ["kimchi", "tahu", "gochujang", "ayam"],
+    "bahan": [
+      "kimchi",
+      "tahu",
+      "gochujang",
+      "ayam"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["korea", "kuah", "pedas"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "korea",
+        "kuah",
+        "pedas"
+      ]
     }
   },
   {
     "nama": "Pad Thai",
     "rasa": "Gurih",
-    "bahan": ["mie beras", "telur", "kecap ikan", "kacang"],
+    "bahan": [
+      "mie beras",
+      "telur",
+      "kecap ikan",
+      "kacang"
+    ],
     "metadata": {
-      "waktu": ["malam"],
-      "kategori": "berat",
-      "sifat": ["thailand", "goreng", "mie"]
+      "waktu": [
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "thailand",
+        "goreng",
+        "mie"
+      ]
     }
   },
   {
     "nama": "Bibimbap",
     "rasa": "Gurih",
-    "bahan": ["nasi", "sayur", "telur", "saus pedas"],
+    "bahan": [
+      "nasi",
+      "sayur",
+      "telur",
+      "saus pedas"
+    ],
     "metadata": {
-      "waktu": ["siang", "malam"],
-      "kategori": "berat",
-      "sifat": ["korea", "nasi", "sehat"]
+      "waktu": [
+        "siang",
+        "malam"
+      ],
+      "kategori": "makanan",
+      "sifat": [
+        "korea",
+        "nasi",
+        "sehat"
+      ]
     }
   }
 ]

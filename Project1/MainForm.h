@@ -35,6 +35,7 @@ namespace FoodLover {
 			MuatFeedbackDariFile();
 
 			this->comboRasa->SelectedIndex = 0;
+			this->comboKategori->SelectedIndex = 0;
 		}
 
 	protected:
@@ -152,6 +153,8 @@ namespace FoodLover {
 	private: List<FoodLover::Menu^>^ databaseMenu;
 	private: System::Windows::Forms::Button^ btnFeedback;
 private: System::Windows::Forms::TreeView^ treeViewHasil;
+private: System::Windows::Forms::ComboBox^ comboKategori;
+private: System::Windows::Forms::Label^ labelKategori;
 
 	protected:
 
@@ -175,6 +178,8 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			this->txtBahan = (gcnew System::Windows::Forms::TextBox());
 			this->btnFeedback = (gcnew System::Windows::Forms::Button());
 			this->treeViewHasil = (gcnew System::Windows::Forms::TreeView());
+			this->comboKategori = (gcnew System::Windows::Forms::ComboBox());
+			this->labelKategori = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
 			// labelRasa
@@ -190,7 +195,10 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			// comboRasa
 			// 
 			this->comboRasa->FormattingEnabled = true;
-			this->comboRasa->Items->AddRange(gcnew cli::array< System::Object^  >(4) { L"Semua", L"Pedas", L"Manis", L"Gurih" });
+			this->comboRasa->Items->AddRange(gcnew cli::array< System::Object^  >(8) {
+				L"Semua", L"Pedas", L"Manis", L"Gurih", L"Asam",
+					L"Segar", L"Pahit", L"Creamy"
+			});
 			this->comboRasa->Location = System::Drawing::Point(15, 234);
 			this->comboRasa->Name = L"comboRasa";
 			this->comboRasa->Size = System::Drawing::Size(121, 21);
@@ -198,7 +206,7 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			// 
 			// btnCari
 			// 
-			this->btnCari->Location = System::Drawing::Point(151, 232);
+			this->btnCari->Location = System::Drawing::Point(269, 234);
 			this->btnCari->Name = L"btnCari";
 			this->btnCari->Size = System::Drawing::Size(108, 23);
 			this->btnCari->TabIndex = 2;
@@ -242,11 +250,31 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			this->treeViewHasil->TabIndex = 7;
 			this->treeViewHasil->NodeMouseDoubleClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &MainForm::treeViewHasil_NodeMouseDoubleClick);
 			// 
+			// comboKategori
+			// 
+			this->comboKategori->FormattingEnabled = true;
+			this->comboKategori->Items->AddRange(gcnew cli::array< System::Object^  >(4) { L"Semua", L"Makanan", L"Minuman", L"Camilan" });
+			this->comboKategori->Location = System::Drawing::Point(142, 234);
+			this->comboKategori->Name = L"comboKategori";
+			this->comboKategori->Size = System::Drawing::Size(121, 21);
+			this->comboKategori->TabIndex = 8;
+			// 
+			// labelKategori
+			// 
+			this->labelKategori->AutoSize = true;
+			this->labelKategori->Location = System::Drawing::Point(143, 218);
+			this->labelKategori->Name = L"labelKategori";
+			this->labelKategori->Size = System::Drawing::Size(49, 13);
+			this->labelKategori->TabIndex = 9;
+			this->labelKategori->Text = L"Kategori:";
+			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(598, 606);
+			this->Controls->Add(this->labelKategori);
+			this->Controls->Add(this->comboKategori);
 			this->Controls->Add(this->treeViewHasil);
 			this->Controls->Add(this->btnFeedback);
 			this->Controls->Add(this->txtBahan);
@@ -273,12 +301,16 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 
 		String^ rasaInput = this->comboRasa->Text;
 		String^ bahanMentah = this->txtBahan->Text;
+		String^ kategoriInput = this->comboKategori->Text;
+
+		if (String::IsNullOrEmpty(rasaInput)) { this->treeViewHasil->EndUpdate(); return; }
 
 		// Kirim data (kosong pun tetap kirim untuk trigger randomizer)
 		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
-		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\" }";
+		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\", \"kategori\": \"" + kategoriInput + "\" }";
 		String^ url = "http://127.0.0.1:5000/cari";
 		String^ responseServer = "";
+
 
 		try {
 			WebClient^ client = gcnew WebClient();
