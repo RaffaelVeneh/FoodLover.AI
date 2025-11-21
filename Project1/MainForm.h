@@ -5,6 +5,7 @@ using namespace System::IO;
 using namespace System::Net;
 using namespace System::Text;
 using namespace System::Text::RegularExpressions;
+using namespace System::Globalization;
 
 namespace FoodLover {
 
@@ -239,6 +240,7 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 			this->treeViewHasil->Name = L"treeViewHasil";
 			this->treeViewHasil->Size = System::Drawing::Size(472, 146);
 			this->treeViewHasil->TabIndex = 7;
+			this->treeViewHasil->NodeMouseDoubleClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &MainForm::treeViewHasil_NodeMouseDoubleClick);
 			// 
 			// MainForm
 			// 
@@ -393,6 +395,58 @@ private: System::Windows::Forms::TreeView^ treeViewHasil;
 		FeedbackForm^ form = gcnew FeedbackForm();
 
 		form->ShowDialog();
+	}
+	private: System::Void treeViewHasil_NodeMouseDoubleClick(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e) {
+		// 1. Pastikan yang diklik adalah NAMA MENU (Parent), bukan bahan (Child)
+		// Parent node levelnya 0. Child node levelnya 1.
+		if (e->Node->Level != 0) return;
+
+		// Ambil nama menu dari teks node. 
+		// Format saat ini: "Nasi Goreng (2 Cocok...)"
+		// Kita harus membuang bagian dalam kurung (...)
+		String^ teksNode = e->Node->Text;
+		int indexKurung = teksNode->IndexOf("(");
+		if (indexKurung < 0) return; // Validasi
+
+		String^ namaMenuFix = teksNode->Substring(0, indexKurung)->Trim();
+
+		// 2. Siapkan Data untuk dikirim ke Server
+		String^ inputBahan = this->txtBahan->Text->Replace("\n", " ")->Replace("\"", "");
+		String^ rasaInput = this->comboRasa->Text;
+
+		// Dapatkan Waktu Sekarang (Pagi/Siang/Malam) untuk Metadata
+		int jam = DateTime::Now.Hour;
+		String^ waktuSekarang = "malam";
+		if (jam >= 5 && jam < 11) waktuSekarang = "pagi";
+		else if (jam >= 11 && jam < 15) waktuSekarang = "siang";
+		else if (jam >= 15 && jam < 19) waktuSekarang = "sore";
+
+		String^ jsonLog = String::Format(
+			"{{"
+			"\"input_user\": \"{0}\", "
+			"\"rasa_input\": \"{1}\", "
+			"\"menu_dipilih\": \"{2}\", "
+			"\"waktu_akses\": \"{3}\", "
+			"\"timestamp\": \"{4}\""
+			"}}",
+			inputBahan, rasaInput, namaMenuFix, waktuSekarang, DateTime::Now.ToString("yyyy-MM-dd HH:mm:ss")
+		);
+
+		// 3. Kirim ke Server (Background Process biar UI gak macet)
+		try {
+			String^ url = "http://127.0.0.1:5000/catat-pilihan";
+			WebClient^ client = gcnew WebClient();
+			client->Headers->Add("Content-Type", "application/json");
+			client->UploadStringAsync(gcnew Uri(url), "POST", jsonLog);
+
+			// Feedback Visual ke User
+			MessageBox::Show("Selamat Menikmati " + namaMenuFix + "!\nAI telah mencatat preferensi Anda.",
+				"Pilihan Disimpan", MessageBoxButtons::OK, MessageBoxIcon::Information);
+		}
+		catch (Exception^ ex) {
+			// Silent error (jangan ganggu user kalau log gagal)
+			Console::WriteLine("Gagal log: " + ex->Message);
+		}
 	}
 };
 }

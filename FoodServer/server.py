@@ -7,6 +7,21 @@ from thefuzz import fuzz
 app = Flask(__name__)
 NAMA_FILE_DB = 'resep.json'
 NAMA_FILE_KAMUS = 'kamus.json'
+NAMA_FILE_LOG = 'history.json'
+
+# --- CONFIG & KAMUS ALAY ---
+KAMUS_ALAY = {
+    '4': 'a', '@': 'a',
+    '3': 'e',
+    '1': 'i', '!': 'i',
+    '0': 'o',
+    '5': 's', '$': 's',
+    '2': 'z',
+    '6': 'b',
+    '8': 'b',
+    '9': 'g',
+    'g4k': 'tidak', 'gak': 'tidak', 'ga': 'tidak' # Tambahan slang umum
+}
 
 def muat_json(nama_file):
     # Fungsi serbaguna untuk membaca file JSON
@@ -24,41 +39,65 @@ def simpan_database(data):
     with open(NAMA_FILE_DB, 'w') as f:
         json.dump(data, f, indent=2)
 
+def normalisasi_alay(teks):
+    """
+    Fungsi ini bertugas membersihkan 'sampah' input user
+    sebelum dibaca oleh algoritma pencocokan.
+    Contoh: 'n4siii' -> 'nasi'
+    """
+    if not teks: return ""
+    
+    teks_bersih = teks.lower()
+    
+    # TAHAP 1: Leet Speak (Angka jadi Huruf)
+    # Kita ganti karakter alay satu per satu
+    for alay, normal in KAMUS_ALAY.items():
+        teks_bersih = teks_bersih.replace(alay, normal)
+        
+    # TAHAP 2: Hapus Huruf Berulang Berlebihan (Regex)
+    # Contoh: "nasiii" -> "nasi", "bangeeet" -> "banget"
+    # Logika: Jika ada huruf diulang lebih dari 2x, jadikan 1x (kecuali kasus khusus)
+    # Pola (pattern) ini mencari karakter (.) yang muncul berulang (\1+)
+    teks_bersih = re.sub(r'(.)\1+', r'\1', teks_bersih)
+    
+    return teks_bersih
+
 CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
 print(f"[INFO] Kamus berhasil dimuat: {len(CACHE_KAMUS)} kata sinonim.")
 
 # --- FUNGSI PENCARI CERDAS (FUZZY LOGIC) ---
 # --- 2. LOGIKA PENCARIAN CERDAS (REVISI TOTAL) ---
 def cek_kemiripan(bahan_user, bahan_resep):
-    # A. Cek Sinonim dari File kamus.json
-    # Pastikan "mi" diubah jadi "mie" (atau standar database Anda)
-    bahan_user = CACHE_KAMUS.get(bahan_user, bahan_user)
-    bahan_resep_asli = bahan_resep # Simpan nama asli
+    # A. Normalisasi ALAY dulu! (Langkah Baru)
+    bahan_user_asli = bahan_user
+    bahan_user = normalisasi_alay(bahan_user) 
     
-    # B. Exact Match (Cepat & Pasti)
+    # B. Cek Kamus Sinonim (kamus.json)
+    # Misal: user ketik "cabe" -> normal "cabe" -> kamus ubah jadi "cabai"
+    bahan_user = CACHE_KAMUS.get(bahan_user, bahan_user)
+    
+    # C. Exact Match (Cek Langsung)
     if bahan_user == bahan_resep:
         return True
 
-    # C. Word Boundary Check (Cek per Kata) - SOLUSI MASALAH "MI" vs "MINYAK"
-    # Kita pecah "minyak goreng" menjadi ["minyak", "goreng"]
-    # Kita cek apakah "mi" ada di list itu? Jawabannya TIDAK.
-    # Tapi jika "ayam" vs "daging ayam", "ayam" ada di list.
-    kata_kunci_resep = re.split(r'[,\.\s]+', bahan_resep) # Split jadi list kata
+    # D. Word Boundary Check (Cek per Kata) 
+    # Mencegah "mi" cocok dengan "minyak"
+    kata_kunci_resep = re.split(r'[,\.\s]+', bahan_resep)
     if bahan_user in kata_kunci_resep:
         return True
         
-    # D. Fuzzy Match (Typo Tolerance) - Dengan Logika Lebih Ketat
-    # token_sort_ratio: Mengabaikan urutan kata (bawang merah == merah bawang)
-    # tapi TIDAK mencocokkan "mi" dengan "minyak".
+    # E. Fuzzy Match (Typo Tolerance)
+    # KITA TURUNKAN THRESHOLD KE 80
+    # Alasannya: Setelah dinormalisasi, teks sudah lebih bersih.
+    # "nsi" vs "nasi" itu rasionya 86. Kalau threshold 90 dia gagal.
+    # "bwang" vs "bawang" rasionya 91.
     skor = fuzz.token_sort_ratio(bahan_user, bahan_resep)
     
-    # Kita pasang standar tinggi (90) agar tidak sembarangan mencocokkan
-    if skor >= 90: 
+    if skor >= 80: 
         return True
         
-    # E. Khusus Kata Panjang (Partial Match hanya untuk kata > 3 huruf)
-    # Ini untuk menangani kasus "stroberi" vs "selai stroberi" 
-    # Tanpa memicu "mi" vs "minyak"
+    # F. Partial Match Khusus Kata Panjang (>3 huruf)
+    # Untuk menangani "stroberi" di dalam "selai stroberi"
     if len(bahan_user) > 3 and bahan_user in bahan_resep:
         return True
         
@@ -114,7 +153,7 @@ def cari_resep():
                     "bahan_lengkap": "|".join(semua_bahan_resep),
                     "bahan_match": "|".join(bahan_cocok_list),
                     
-                    # Field Baru untuk dikirim ke C++
+                    # Metadata
                     "meta_waktu": waktu_str,
                     "meta_kategori": kategori_str,
                     "meta_sifat": sifat_str
@@ -138,7 +177,8 @@ def tambah_resep():
     menu_baru = {
         "nama": nama_baru,
         "rasa": rasa_baru,
-        "bahan": list_bahan_bersih
+        "bahan": list_bahan_bersih,
+        "metadata": {"waktu": ["kapanpun"], "kategori": "umum", "sifat": ["umum"]}
     }
     
     db_sekarang = muat_json(NAMA_FILE_DB)
@@ -153,6 +193,34 @@ def reload_kamus():
     global CACHE_KAMUS
     CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
     return jsonify({"status": "sukses", "pesan": "Kamus sinonim telah diperbarui!", "jumlah_kata": len(CACHE_KAMUS)})
+
+# --- 4. FITUR MEMORI (LOGGING) ---
+NAMA_FILE_LOG = 'history.json' # Buku harian AI
+
+@app.route('/catat-pilihan', methods=['POST'])
+def catat_pilihan():
+    data = request.get_json()
+    
+    # Data yang akan disimpan untuk pelatihan AI nanti
+    record_baru = {
+        "input_user": data.get('input_user'),
+        "rasa_dipilih": data.get('rasa_input'),
+        "menu_dipilih": data.get('menu_dipilih'),
+        "waktu_akses": data.get('waktu_akses'), # Pagi/Siang/Malam
+        "timestamp": data.get('timestamp')
+    }
+    
+    # Simpan ke history.json
+    history = muat_json(NAMA_FILE_LOG)
+    if isinstance(history, list) == False: history = [] # Jaga-jaga kalau error
+    
+    history.append(record_baru)
+    
+    with open(NAMA_FILE_LOG, 'w') as f:
+        json.dump(history, f, indent=2)
+        
+    print(f"[BELAJAR] User memilih: {record_baru['menu_dipilih']}")
+    return jsonify({"status": "sukses", "pesan": "Pilihan dicatat!"})
 
 if __name__ == '__main__':
     print("Server AI FoodAssistant Berjalan...")
