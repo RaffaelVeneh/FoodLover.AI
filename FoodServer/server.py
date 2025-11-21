@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 import random
 from flask import Flask, request, jsonify
+from collections import Counter
 from thefuzz import fuzz
 
 app = Flask(__name__)
@@ -132,26 +133,89 @@ def cek_kemiripan(bahan_user, bahan_resep):
     return False
 
 # --- LOGIKA REKOMENDASI RANDOM (FALLBACK) ---
-def get_random_recommendations(database, limit=10):
-    # Ambil acak dari database
+def get_personalized_recommendations(database, limit=10):
+    history = muat_json(NAMA_FILE_LOG)
+    
+    # Jika history kosong, kembali ke random biasa
+    if not isinstance(history, list) or len(history) == 0:
+        return get_random_fallback(database, limit, "Sepertinya kamu baru disini. Ini beberapa menu populer untukmu:")
+
+    # 1. ANALISA MEMORI (Apa yang sering dipilih?)
+    list_menu_dipilih = [h.get('menu_dipilih') for h in history if h.get('menu_dipilih')]
+    # Hitung frekuensi: {'Nasi Goreng': 5, 'Teh Manis': 2}
+    counter_menu = Counter(list_menu_dipilih)
+    
+    # Ambil Top 5 Menu Favorit
+    top_menu_names = [m[0] for m in counter_menu.most_common(5)]
+    
+    hasil_personal = []
+    nama_personal = set() # Untuk mencegah duplikasi
+
+    # Cari detail resep dari database untuk menu favorit ini
+    for menu in database:
+        if menu['nama'] in top_menu_names:
+            meta = menu.get('metadata', {})
+            hasil_personal.append({
+                "nama": menu['nama'],
+                "rasa": menu.get('rasa', 'Umum'),
+                "skor": 0, "relevansi": 1.0, "is_ai": True, # Kita anggap relevan karena user suka
+                "bahan_lengkap": "|".join(menu.get('bahan', [])),
+                "bahan_match": "(Favorit Kamu)", # Penanda visual
+                "meta_waktu": "|".join(meta.get('waktu', ['kapanpun'])),
+                "meta_kategori": meta.get('kategori', 'umum'),
+                "meta_sifat": "|".join(meta.get('sifat', ['umum'])),
+                "label_ai": "YA", # Kita kasih bintang biar spesial
+                "pesan_sistem": ""
+            })
+            nama_personal.add(menu['nama'])
+
+    # 2. ISI SISANYA DENGAN RANDOM (Discovery)
+    # Supaya user tidak bosan makan itu-itu saja
+    sisa_slot = limit - len(hasil_personal)
+    if sisa_slot > 0:
+        # Filter database: Jangan masukkan menu yang sudah ada di list favorit
+        db_sisa = [m for m in database if m['nama'] not in nama_personal]
+        if db_sisa:
+            tambahan_random = random.sample(db_sisa, min(len(db_sisa), sisa_slot))
+            for menu in tambahan_random:
+                meta = menu.get('metadata', {})
+                hasil_personal.append({
+                    "nama": menu['nama'],
+                    "rasa": menu.get('rasa', 'Umum'),
+                    "skor": 0, "relevansi": 0, "is_ai": False,
+                    "bahan_lengkap": "|".join(menu.get('bahan', [])),
+                    "bahan_match": "",
+                    "meta_waktu": "|".join(meta.get('waktu', ['kapanpun'])),
+                    "meta_kategori": meta.get('kategori', 'umum'),
+                    "meta_sifat": "|".join(meta.get('sifat', ['umum'])),
+                    "label_ai": "TIDAK",
+                    "pesan_sistem": ""
+                })
+
+    # Tambahkan pesan sistem di item pertama
+    if hasil_personal:
+        hasil_personal[0]['pesan_sistem'] = "Sepertinya kamu sedang bingung mencari apa. ini rekomendasi spesial & menu baru:"
+        
+    return hasil_personal
+
+def get_random_fallback(database, limit, pesan):
+    # Fungsi random murni (Backup)
     jumlah = min(len(database), limit)
     pilihan_acak = random.sample(database, jumlah)
-    
     hasil = []
-    for menu in pilihan_acak:
+    for i, menu in enumerate(pilihan_acak):
         meta = menu.get('metadata', {})
         hasil.append({
             "nama": menu['nama'],
             "rasa": menu.get('rasa', 'Umum'),
-            "skor": 0, # Skor 0 menandakan ini hasil random
+            "skor": 0, "relevansi": 0, "is_ai": False,
             "bahan_lengkap": "|".join(menu.get('bahan', [])),
-            "bahan_match": "", # Tidak ada yang match
+            "bahan_match": "",
             "meta_waktu": "|".join(meta.get('waktu', ['kapanpun'])),
             "meta_kategori": meta.get('kategori', 'umum'),
             "meta_sifat": "|".join(meta.get('sifat', ['umum'])),
             "label_ai": "TIDAK",
-            # Field khusus untuk pesan error
-            "pesan_sistem": "Sepertinya kamu sedang bingung mau mencari apa. Berikut rekomendasi makanan dan minuman untukmu:"
+            "pesan_sistem": pesan if i == 0 else ""
         })
     return hasil
 
@@ -161,6 +225,7 @@ def cari_resep():
     data_masuk = request.get_json()
     input_bahan_raw = data_masuk.get('bahan', '')
     input_rasa = data_masuk.get('rasa', 'Semua')
+    input_kategori = data_masuk.get('kategori', 'Semua')
     
     jam = datetime.datetime.now().hour
     waktu_server = "malam"
@@ -170,77 +235,74 @@ def cari_resep():
 
     database_menu = muat_json(NAMA_FILE_DB)
     
-    # 1. PRE-PROCESSING INPUT
-    # Pisahkan, bersihkan, dan cek kamus untuk setiap input user
+    # Pre-processing
     list_bahan_user = []
-    user_staples = set() # Set untuk menyimpan bahan pokok yang diketik user
+    user_staples = set()
+    filter_keyword_kategori = None 
     
     raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', input_bahan_raw) if x]
     
     for b in raw_split:
         b_bersih = normalisasi_alay(b)
-        b_final = CACHE_KAMUS.get(b_bersih, b_bersih) # Cek kamus (misal: 'mi' -> 'mie')
+        if b_bersih in ['minuman', 'minum']:
+            filter_keyword_kategori = 'minuman'; continue 
+        elif b_bersih in ['makanan', 'makan']:
+            filter_keyword_kategori = 'makanan'; continue
+            
+        b_final = CACHE_KAMUS.get(b_bersih, b_bersih)
         list_bahan_user.append(b_final)
-        
-        # Deteksi Bahan Pokok
-        # Jika user mengetik "nasi", kita catat!
-        if b_final in BAHAN_POKOK:
-            user_staples.add(b_final)
+        if b_final in BAHAN_POKOK: user_staples.add(b_final)
 
-    if not list_bahan_user:
-        return jsonify(get_random_recommendations(database_menu))
+    target_kategori = filter_keyword_kategori if filter_keyword_kategori else input_kategori
+
+    # --- MODIFIKASI PENTING DI SINI ---
+    # Jika input kosong -> Panggil PERSONALIZED recommendation
+    if not list_bahan_user and not filter_keyword_kategori:
+        return jsonify(get_personalized_recommendations(database_menu))
 
     ai_suggestion = tanya_ai(list_bahan_user, waktu_server)
     hasil_sementara = []
     
     for menu in database_menu:
-        # Filter Rasa
-        if input_rasa != "Semua" and menu.get('rasa', '').lower() != input_rasa.lower():
-            continue
-
-        # --- LOGIKA STRICT FILTER (BARU) ---
-        semua_bahan_resep = menu.get('bahan', [])
+        # 1. Filter Rasa
+        if input_rasa != "Semua" and menu.get('rasa', '').lower() != input_rasa.lower(): continue
         
-        # Jika user memasukkan minimal 1 bahan pokok (misal: "nasi")
-        if len(user_staples) > 0:
-            # Cek apakah menu ini punya SALAH SATU bahan pokok yang diminta user?
-            # Kita cek manual string-nya
-            is_staple_present = False
-            for b_resep in semua_bahan_resep:
-                # Kita harus cek pintar, misal user minta "mie", resep punya "indomie" -> OK
-                for staple in user_staples:
-                    if cek_kemiripan(staple, b_resep.lower()):
-                        is_staple_present = True
-                        break
-                if is_staple_present: break
-            
-            # HUKUMAN MATI: Jika user minta bahan pokok, tapi menu ini tidak punya -> SKIP
-            if not is_staple_present:
-                continue 
+        # 2. Filter Kategori
+        meta = menu.get('metadata', {})
+        menu_kat = meta.get('kategori', 'umum').lower()
+        if target_kategori != "Semua":
+            t = target_kategori.lower()
+            if t == "makanan" and menu_kat == "minuman": continue
+            elif t == "minuman" and menu_kat != "minuman": continue
+            elif t == "camilan" and menu_kat != "camilan": continue
 
-        # --- LOGIKA SKORING (NORMAL) ---
+        # 3. Strict Filter
+        semua_bahan_resep = menu.get('bahan', [])
+        if len(user_staples) > 0:
+            present = False
+            for b_r in semua_bahan_resep:
+                for s in user_staples:
+                    if cek_kemiripan(s, b_r.lower()): present = True; break
+                if present: break
+            if not present: continue 
+
+        # 4. Scoring
         skor = 0
         bahan_cocok_list = []
-        
         for b_resep in semua_bahan_resep:
-            b_resep_kecil = b_resep.lower()
-            for b_user in list_bahan_user:
-                if cek_kemiripan(b_user, b_resep_kecil):
-                    skor += 1
-                    bahan_cocok_list.append(b_resep)
-                    break 
+            br = b_resep.lower()
+            for bu in list_bahan_user:
+                if cek_kemiripan(bu, br): skor += 1; bahan_cocok_list.append(b_resep); break 
         
+        if not list_bahan_user and filter_keyword_kategori: skor = 1
+
         if skor > 0:
-            relevansi = skor / len(list_bahan_user)
+            relevansi = skor / len(list_bahan_user) if list_bahan_user else 1.0
             is_ai = (ai_suggestion and ai_suggestion.startswith(menu['nama']))
-            
-            meta = menu.get('metadata', {})
             hasil_sementara.append({
                 "nama": menu['nama'],
                 "rasa": menu.get('rasa', 'Umum'),
-                "skor": skor,
-                "relevansi": relevansi,
-                "is_ai": is_ai,
+                "skor": skor, "relevansi": relevansi, "is_ai": is_ai,
                 "bahan_lengkap": "|".join(semua_bahan_resep),
                 "bahan_match": "|".join(bahan_cocok_list),
                 "meta_waktu": "|".join(meta.get('waktu', ['kapanpun'])),
@@ -250,14 +312,12 @@ def cari_resep():
                 "pesan_sistem": ""
             })
 
+    # Jika hasil kosong setelah search -> Tetap pakai PERSONALIZED
     if not hasil_sementara:
-         return jsonify(get_random_recommendations(database_menu))
+         return jsonify(get_personalized_recommendations(database_menu))
 
-    # Sorting
     hasil_final = sorted(hasil_sementara, key=lambda x: (x['is_ai'], x['relevansi'], x['skor']), reverse=True)
-    hasil_final = hasil_final[:10]
-    
-    return jsonify(hasil_final)
+    return jsonify(hasil_final[:15])
 
 @app.route('/catat-pilihan', methods=['POST'])
 def catat_pilihan():
