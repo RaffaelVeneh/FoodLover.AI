@@ -137,6 +137,14 @@ namespace FoodLover {
 				}
 			}
 		}
+	private: 
+		void OnTrainingSelesai(Object^ sender, DownloadStringCompletedEventArgs^ e) 
+		{
+			if (e->Error == nullptr) {
+				// Sukses
+				Console::WriteLine("Info: AI telah selesai dilatih ulang di background.");
+		}
+	}
 	private: System::Windows::Forms::Label^ labelRasa;
 	protected:
 
@@ -293,6 +301,21 @@ private: System::Windows::Forms::Label^ labelKategori;
 	private: System::Void label1_Click(System::Object^ sender, System::EventArgs^ e) {
 	}
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) {
+		try {
+			String^ url = "http://127.0.0.1:5000/latih-ulang";
+			WebClient^ client = gcnew WebClient();
+
+			// Daftarkan fungsi callback tadi (agar kita tahu kapan selesainya)
+			client->DownloadStringCompleted += gcnew DownloadStringCompletedEventHandler(this, &MainForm::OnTrainingSelesai);
+
+			// PENTING: Gunakan 'Async' agar aplikasi TIDAK MACET saat loading
+			// Server akan training di background, user bisa langsung pakai aplikasi.
+			client->DownloadStringAsync(gcnew Uri(url));
+		}
+		catch (Exception^ ex) {
+			// Silent Fail: Jika server belum nyala, jangan crash. Biarkan aplikasi jalan biasa.
+			Console::WriteLine("Gagal memicu auto-training: " + ex->Message);
+		}
 	}
 	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
 

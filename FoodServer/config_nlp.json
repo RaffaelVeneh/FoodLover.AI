@@ -9,12 +9,16 @@
     "6": "b",
     "8": "b",
     "9": "g",
-    "g4k": "tidak", "gak": "tidak", "ga": "tidak"
+    "g4k": "tidak", "gak": "tidak", "ga": "tidak",
+    "kuy": "ayo", "bgt": "banget", "yg": "yang",
+    "aq": "aku", "sy": "saya", "km": "kamu",
+    "beras": "nasi"
   },
   "stopwords": [
     "aku", "saya", "gue", "ingin", "pengen", "mau", "minta", "dong", 
     "tolong", "carikan", "menu", "resep", "yang", "dan", "atau", "masak", 
-    "buat", "bikin", "hari", "ini", "untuk", "makan", "minum", "lagi", "sedang"
+    "buat", "bikin", "hari", "ini", "untuk", "makan", "minum", "lagi", "sedang",
+    "cari", "ada", "nggak", "tidak"
   ],
   "bahan_pokok": [
     "nasi", "beras", "mie", "mi", "bakmi", "indomie",

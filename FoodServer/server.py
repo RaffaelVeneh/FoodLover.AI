@@ -8,6 +8,9 @@ import random
 from flask import Flask, request, jsonify
 from collections import Counter
 from thefuzz import fuzz
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import MultiLabelBinarizer
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -101,23 +104,30 @@ def tanya_ai(list_bahan, waktu_sekarang_str):
 # --- LOGIKA PENCARIAN CERDAS ---
 def cek_kemiripan(bahan_user, bahan_resep):
     bahan_user = normalisasi_alay(bahan_user)
-    bahan_user = CACHE_KAMUS.get(bahan_user, bahan_user)
+    bahan_user = CACHE_KAMUS.get(bahan_user, bahan_user) # Misal: beras -> nasi
+    
+    bahan_resep_asli = bahan_resep
+    bahan_resep = CACHE_KAMUS.get(bahan_resep, bahan_resep) # Misal: beras -> nasi
     
     if bahan_user == bahan_resep: return True
     
+    # Cek Word Boundary (Pecah kata)
     kata_kunci_resep = re.split(r'[,\.\s]+', bahan_resep)
     if bahan_user in kata_kunci_resep: return True
-        
+    
+    # Cek Fuzzy
     skor = fuzz.token_sort_ratio(bahan_user, bahan_resep)
     if skor >= 80: return True
-        
-    if len(bahan_user) > 3 and bahan_user in bahan_resep: return True
+    
+    # Cek Partial (Khusus kata panjang)
+    if len(bahan_user) > 3 and (bahan_user in bahan_resep or bahan_user in bahan_resep_asli): 
+        return True
         
     return False
 
-# --- LOGIKA REKOMENDASI RANDOM (FALLBACK) ---
+# --- LOGIKA REKOMENDASI (PERSONALIZED) ---
 def get_personalized_recommendations(database, limit=10, filter_kat="Semua", filter_rasa="Semua", pesan_khusus=""):
-    # FILTER DATABASE
+    # 1. FILTER DATABASE
     db_filtered = []
     for m in database:
         meta = m.get('metadata', {})
@@ -132,18 +142,20 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
             continue
         db_filtered.append(m)
 
+    # UBAH PESAN DISINI (Jika filter tidak menemukan hasil apapun)
     if not db_filtered:
         return [{
             "nama": "Maaf...", "rasa": "-", "skor": 0, "relevansi": 0, "is_ai": False,
             "bahan_lengkap": "-", "bahan_match": "", "meta_waktu": "-", "meta_kategori": "-", "meta_sifat": "-", 
             "label_ai": "TIDAK",
-            "pesan_sistem": f"Tidak ditemukan rekomendasi untuk kategori '{filter_kat}' dengan rasa '{filter_rasa}'."
+            "pesan_sistem": f"Menu yang kamu cari tidak ada untuk kategori '{filter_kat}' & rasa '{filter_rasa}'."
         }]
 
     history = muat_json(NAMA_FILE_LOG)
     hasil_personal = []
     nama_personal = set()
 
+    # 2. AMBIL DARI HISTORY
     if isinstance(history, list) and len(history) > 0:
         list_menu_dipilih = [h.get('menu_dipilih') for h in history if h.get('menu_dipilih')]
         counter_menu = Counter(list_menu_dipilih)
@@ -165,7 +177,7 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
                 nama_personal.add(menu['nama'])
                 if len(hasil_personal) >= 5: break
 
-    # ISI SISANYA DENGAN RANDOM (Dari DB Filtered)
+    # 3. ISI SISA DENGAN RANDOM
     sisa_slot = limit - len(hasil_personal)
     if sisa_slot > 0:
         db_sisa = [m for m in db_filtered if m['nama'] not in nama_personal]
@@ -184,9 +196,11 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
                     "label_ai": "TIDAK", "pesan_sistem": ""
                 })
 
+    # 4. SET PESAN SISTEM (UBAH PESAN GIBBERISH DISINI)
     if hasil_personal:
         if pesan_khusus:
-            hasil_personal[0]['pesan_sistem'] = pesan_khusus
+            # Ini yang diganti (saat input gibberish/ngawur)
+            hasil_personal[0]['pesan_sistem'] = "Menu yang kamu cari tidak ada. Berikut rekomendasi makanan/minuman untukmu:"
         else:
             kategori_msg = filter_kat if filter_kat != "Semua" else "makanan/minuman"
             hasil_personal[0]['pesan_sistem'] = f"Rekomendasi {kategori_msg} pilihan untukmu:"
@@ -213,6 +227,98 @@ def get_random_fallback(database, limit, pesan):
             "pesan_sistem": pesan if i == 0 else ""
         })
     return hasil
+
+# --- LOGIKA ACTIVE LEARNING ---
+def generate_base_knowledge(database, jumlah=500):
+    # Fungsi ini membuat "Pengetahuan Dasar" agar AI tidak lupa resep lain
+    # saat terlalu fokus belajar dari history user.
+    dataset = []
+    for _ in range(jumlah):
+        target_resep = random.choice(database)
+        bahan_asli = target_resep['bahan']
+        # Simulasi input user (ambil sebagian bahan acak)
+        if not bahan_asli: continue
+        jumlah_input = random.randint(1, len(bahan_asli))
+        input_user = random.sample(bahan_asli, jumlah_input)
+        
+        meta_waktu = target_resep.get('metadata', {}).get('waktu', ['kapanpun'])
+        waktu_sim = random.choice(meta_waktu)
+        if waktu_sim == 'kapanpun': waktu_sim = random.choice(['pagi', 'siang', 'malam'])
+        
+        dataset.append({
+            "bahan_input": input_user,
+            "waktu": waktu_sim,
+            "target_nama": target_resep['nama']
+        })
+    return pd.DataFrame(dataset)
+
+def latih_ulang_otak():
+    global OTAK_AI, ENCODER_AI, VOCAB_AI
+    
+    print("[TRAINING] Memulai proses belajar ulang...")
+    
+    # 1. AMBIL DATA UMUM (BASE KNOWLEDGE)
+    db_resep = muat_json(NAMA_FILE_DB)
+    df_base = generate_base_knowledge(db_resep, jumlah=500)
+    
+    # 2. AMBIL DATA PENGALAMAN (HISTORY)
+    history = muat_json(NAMA_FILE_LOG)
+    df_history = pd.DataFrame()
+    
+    if isinstance(history, list) and len(history) > 0:
+        data_hist = []
+        for h in history:
+            # Kita konversi format history agar sama dengan format training
+            # Input user di history string "nasi, telur", harus diubah jadi list ['nasi', 'telur']
+            raw_input = h.get('input_user', '')
+            list_input = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
+            
+            # Abaikan jika input kosong
+            if not list_input: continue
+                
+            data_hist.append({
+                "bahan_input": list_input,
+                "waktu": h.get('waktu_akses', 'siang'), # Ambil konteks waktu asli user
+                "target_nama": h.get('menu_dipilih')    # Ini kunci! AI belajar pilihan user
+            })
+        
+        if data_hist:
+            df_history = pd.DataFrame(data_hist)
+            print(f"[TRAINING] Ditemukan {len(df_history)} data pengalaman baru dari user.")
+    
+    # 3. GABUNGKAN (Masa Lalu + Masa Kini)
+    # Kita beri bobot lebih pada history? Untuk sekarang kita gabung biasa dulu.
+    if not df_history.empty:
+        df_final = pd.concat([df_base, df_history], ignore_index=True)
+    else:
+        df_final = df_base
+        
+    # 4. PROSES VECTORIZATION (Sama seperti otak_ai.py)
+    mlb = MultiLabelBinarizer()
+    X_bahan = mlb.fit_transform(df_final['bahan_input'])
+    
+    map_waktu = {'pagi': 0, 'siang': 1, 'sore': 2, 'malam': 3}
+    # Handle data kotor/missing pada waktu
+    X_waktu = df_final['waktu'].map(map_waktu).fillna(1).values.reshape(-1, 1)
+    
+    X_train = np.hstack((X_bahan, X_waktu))
+    y_train = df_final['target_nama']
+    
+    # 5. LATIH NEURAL NETWORK
+    # Kita gunakan parameter warm_start=False agar dia belajar dari nol gabungan data
+    model = MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=500, random_state=42)
+    model.fit(X_train, y_train)
+    
+    # 6. SIMPAN & UPDATE MEMORI AKTIF
+    joblib.dump(model, NAMA_FILE_MODEL)
+    joblib.dump(mlb, NAMA_FILE_ENCODER)
+    
+    # Update variabel global agar server langsung pintar tanpa restart
+    OTAK_AI = model
+    ENCODER_AI = mlb
+    VOCAB_AI = set(mlb.classes_)
+    
+    return f"Berhasil dilatih dengan {len(df_final)} data (Base + History)."
 
 # --- ROUTES ---
 @app.route('/cari', methods=['POST'])
@@ -319,12 +425,20 @@ def cari_resep():
 
     # KONDISI 3: GIBBERISH / TIDAK ADA HASIL (Pencarian Gagal Total)
     if not hasil_sementara:
-         pesan_bingung = "Sepertinya kamu sedang bingung. Berikut rekomendasi makanan/minuman untukmu:"
+         pesan_bingung = "Menu yang kamu cari tidak ada. Berikut rekomendasi makanan/minuman lainnya untukmu:"
          return jsonify(get_personalized_recommendations(database_menu, 10, target_kategori, target_rasa, pesan_bingung))
 
     hasil_final = sorted(hasil_sementara, key=lambda x: (x['is_ai'], x['relevansi'], x['skor']), reverse=True)
     return jsonify(hasil_final[:15])
 
+@app.route('/latih-ulang', methods=['GET', 'POST'])
+def trigger_training():
+    try:
+        pesan = latih_ulang_otak()
+        return jsonify({"status": "sukses", "pesan": pesan})
+    except Exception as e:
+        return jsonify({"status": "error", "pesan": str(e)}), 500
+    
 @app.route('/catat-pilihan', methods=['POST'])
 def catat_pilihan():
     data = request.get_json()
