@@ -461,23 +461,43 @@ def catat_pilihan():
 @app.route('/tambah', methods=['POST'])
 def tambah_resep():
     data_masuk = request.get_json()
+    
+    # Ambil data dasar
     nama_baru = data_masuk.get('nama')
     rasa_baru = data_masuk.get('rasa')
     bahan_raw = data_masuk.get('bahan')
     
-    if not nama_baru or not bahan_raw: return jsonify({"status": "gagal"}), 400
+    # Ambil data Metadata (BARU)
+    # Jika user tidak kirim (misal pakai aplikasi versi lama), pakai default
+    kategori_baru = data_masuk.get('kategori', 'makanan') 
+    waktu_baru = data_masuk.get('waktu', 'kapanpun').lower()
     
+    if not nama_baru or not bahan_raw: 
+        return jsonify({"status": "gagal", "pesan": "Data nama/bahan kosong"}), 400
+    
+    # Bersihkan bahan
     list_bahan_bersih = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', bahan_raw) if x]
+    
+    # Bentuk struktur data lengkap
     menu_baru = {
         "nama": nama_baru,
         "rasa": rasa_baru,
         "bahan": list_bahan_bersih,
-        "metadata": {"waktu": ["kapanpun"], "kategori": "umum", "sifat": ["umum"]}
+        "metadata": {
+            # Waktu kita simpan sebagai list (sesuai standar json kita)
+            "waktu": [waktu_baru], 
+            "kategori": kategori_baru,
+            "sifat": ["umum"] # Sifat biarkan umum dulu karena belum ada inputnya
+        }
     }
     
     db = muat_json(NAMA_FILE_DB)
     db.append(menu_baru)
     simpan_database(db)
+    
+    # OPSI TAMBAHAN: Latih ulang otak otomatis agar resep baru langsung dikenali?
+    # latih_ulang_otak() 
+    
     return jsonify({"status": "sukses"})
 
 if __name__ == '__main__':

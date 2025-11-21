@@ -45,6 +45,13 @@ namespace FoodLover {
 	private: System::Windows::Forms::Button^ btnBatal;
 	private: System::Windows::Forms::Label^ LabelRasa;
 	private: System::Windows::Forms::ComboBox^ comboRasaFeedback;
+	private: System::Windows::Forms::ComboBox^ comboKategoriMenu;
+	private: System::Windows::Forms::ComboBox^ comboWaktuMenu;
+
+
+	private: System::Windows::Forms::Label^ label1;
+	private: System::Windows::Forms::Label^ label2;
+	private: System::Windows::Forms::Label^ label3;
 
 
 
@@ -71,6 +78,11 @@ namespace FoodLover {
 			this->btnBatal = (gcnew System::Windows::Forms::Button());
 			this->LabelRasa = (gcnew System::Windows::Forms::Label());
 			this->comboRasaFeedback = (gcnew System::Windows::Forms::ComboBox());
+			this->comboKategoriMenu = (gcnew System::Windows::Forms::ComboBox());
+			this->comboWaktuMenu = (gcnew System::Windows::Forms::ComboBox());
+			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->label2 = (gcnew System::Windows::Forms::Label());
+			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
 			// LabelMenuBaru
@@ -86,7 +98,7 @@ namespace FoodLover {
 			// 
 			this->txtNamaMenu->Location = System::Drawing::Point(16, 30);
 			this->txtNamaMenu->Name = L"txtNamaMenu";
-			this->txtNamaMenu->Size = System::Drawing::Size(449, 20);
+			this->txtNamaMenu->Size = System::Drawing::Size(463, 20);
 			this->txtNamaMenu->TabIndex = 1;
 			// 
 			// LabelBahan
@@ -103,12 +115,12 @@ namespace FoodLover {
 			this->txtBahanFeedback->Location = System::Drawing::Point(16, 90);
 			this->txtBahanFeedback->Multiline = true;
 			this->txtBahanFeedback->Name = L"txtBahanFeedback";
-			this->txtBahanFeedback->Size = System::Drawing::Size(446, 185);
+			this->txtBahanFeedback->Size = System::Drawing::Size(463, 185);
 			this->txtBahanFeedback->TabIndex = 3;
 			// 
 			// btnKirim
 			// 
-			this->btnKirim->Location = System::Drawing::Point(16, 341);
+			this->btnKirim->Location = System::Drawing::Point(16, 475);
 			this->btnKirim->Name = L"btnKirim";
 			this->btnKirim->Size = System::Drawing::Size(90, 28);
 			this->btnKirim->TabIndex = 4;
@@ -118,7 +130,7 @@ namespace FoodLover {
 			// 
 			// btnBatal
 			// 
-			this->btnBatal->Location = System::Drawing::Point(113, 341);
+			this->btnBatal->Location = System::Drawing::Point(112, 475);
 			this->btnBatal->Name = L"btnBatal";
 			this->btnBatal->Size = System::Drawing::Size(93, 28);
 			this->btnBatal->TabIndex = 5;
@@ -138,17 +150,72 @@ namespace FoodLover {
 			// comboRasaFeedback
 			// 
 			this->comboRasaFeedback->FormattingEnabled = true;
-			this->comboRasaFeedback->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"Pedas", L"Manis", L"Gurih" });
+			this->comboRasaFeedback->Items->AddRange(gcnew cli::array< System::Object^  >(7) {
+				L"Pedas", L"Manis", L"Gurih", L"Asam",
+					L"Segar", L"Pahit", L"Creamy"
+			});
 			this->comboRasaFeedback->Location = System::Drawing::Point(16, 306);
 			this->comboRasaFeedback->Name = L"comboRasaFeedback";
-			this->comboRasaFeedback->Size = System::Drawing::Size(140, 21);
+			this->comboRasaFeedback->Size = System::Drawing::Size(156, 21);
 			this->comboRasaFeedback->TabIndex = 7;
+			// 
+			// comboKategoriMenu
+			// 
+			this->comboKategoriMenu->FormattingEnabled = true;
+			this->comboKategoriMenu->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"Makanan", L"Minuman", L"Camilan" });
+			this->comboKategoriMenu->Location = System::Drawing::Point(219, 306);
+			this->comboKategoriMenu->Name = L"comboKategoriMenu";
+			this->comboKategoriMenu->Size = System::Drawing::Size(140, 21);
+			this->comboKategoriMenu->TabIndex = 8;
+			// 
+			// comboWaktuMenu
+			// 
+			this->comboWaktuMenu->FormattingEnabled = true;
+			this->comboWaktuMenu->Items->AddRange(gcnew cli::array< System::Object^  >(4) { L"Pagi", L"Siang", L"Malam", L"Kapanpun" });
+			this->comboWaktuMenu->Location = System::Drawing::Point(16, 381);
+			this->comboWaktuMenu->Name = L"comboWaktuMenu";
+			this->comboWaktuMenu->Size = System::Drawing::Size(156, 21);
+			this->comboWaktuMenu->TabIndex = 9;
+			// 
+			// label1
+			// 
+			this->label1->AutoSize = true;
+			this->label1->Location = System::Drawing::Point(216, 289);
+			this->label1->Name = L"label1";
+			this->label1->Size = System::Drawing::Size(79, 13);
+			this->label1->TabIndex = 10;
+			this->label1->Text = L"Kategori Menu:";
+			// 
+			// label2
+			// 
+			this->label2->AutoSize = true;
+			this->label2->Location = System::Drawing::Point(13, 365);
+			this->label2->Name = L"label2";
+			this->label2->Size = System::Drawing::Size(140, 13);
+			this->label2->TabIndex = 11;
+			this->label2->Text = L"Rekomendasi Waktu Menu:";
+			// 
+			// label3
+			// 
+			this->label3->AutoSize = true;
+			this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9));
+			this->label3->Location = System::Drawing::Point(13, 415);
+			this->label3->Name = L"label3";
+			this->label3->Size = System::Drawing::Size(466, 45);
+			this->label3->TabIndex = 12;
+			this->label3->Text = L"Peringatan: \r\nData langsung masuk ke databases sehingga dapat langsung memengaruh"
+				L"i output \r\ndari program. jadi tolong perhatikan input yang diberikan";
 			// 
 			// FeedbackForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(477, 440);
+			this->ClientSize = System::Drawing::Size(491, 539);
+			this->Controls->Add(this->label3);
+			this->Controls->Add(this->label2);
+			this->Controls->Add(this->label1);
+			this->Controls->Add(this->comboWaktuMenu);
+			this->Controls->Add(this->comboKategoriMenu);
 			this->Controls->Add(this->comboRasaFeedback);
 			this->Controls->Add(this->LabelRasa);
 			this->Controls->Add(this->btnBatal);
@@ -166,45 +233,60 @@ namespace FoodLover {
 #pragma endregion
 	private: System::Void btnKirim_Click(System::Object^ sender, System::EventArgs^ e) {
 
+		// 1. AMBIL DATA DARI UI
 		String^ namaMenu = this->txtNamaMenu->Text;
 		String^ rasa = this->comboRasaFeedback->Text;
 		String^ bahanMentah = this->txtBahanFeedback->Text;
 
-		// Validasi
-		if (String::IsNullOrWhiteSpace(namaMenu) || String::IsNullOrWhiteSpace(bahanMentah)) {
-			MessageBox::Show("Data tidak lengkap!", "Warning", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+		// Ambil data Metadata baru
+		String^ kategori = this->comboKategoriMenu->Text;
+		String^ waktu = this->comboWaktuMenu->Text;
+
+		// 2. VALIDASI
+		// Pastikan user tidak mengosongkan input penting
+		if (String::IsNullOrWhiteSpace(namaMenu) || String::IsNullOrWhiteSpace(bahanMentah) ||
+			String::IsNullOrWhiteSpace(kategori) || String::IsNullOrWhiteSpace(waktu)) {
+			MessageBox::Show("Mohon lengkapi semua data (Nama, Bahan, Kategori, dan Waktu).",
+				"Data Belum Lengkap", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			return;
 		}
 
-		// 1. SANITASI INPUT (Ganti Enter jadi Spasi, Hapus kutip)
-		String^ bahanAman = bahanMentah
-			->Replace("\r\n", " ")
-			->Replace("\n", " ")
-			->Replace("\"", "");
+		// 3. SANITASI INPUT
+		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
+		String^ namaAman = namaMenu->Replace("\"", "");
 
-		String^ namaAman = namaMenu->Replace("\"", ""); // Sanitasi nama juga
+		// 4. BENTUK JSON LENGKAP
+		// Kita kirim field tambahan: 'kategori' dan 'waktu'
+		String^ jsonKirim = String::Format(
+			"{{"
+			"\"nama\": \"{0}\", "
+			"\"rasa\": \"{1}\", "
+			"\"bahan\": \"{2}\", "
+			"\"kategori\": \"{3}\", "
+			"\"waktu\": \"{4}\""
+			"}}",
+			namaAman, rasa, bahanAman, kategori, waktu
+		);
 
-		// 2. BENTUK JSON
-		// Format: {"nama": "...", "rasa": "...", "bahan": "..."}
-		String^ jsonKirim = "{ \"nama\": \"" + namaAman + "\", \"rasa\": \"" + rasa + "\", \"bahan\": \"" + bahanAman + "\" }";
-
-		// 3. KIRIM KE SERVER (Route /tambah)
+		// 5. KIRIM KE SERVER
 		String^ url = "http://127.0.0.1:5000/tambah";
 
 		try {
 			WebClient^ client = gcnew WebClient();
 			client->Headers->Add("Content-Type", "application/json");
 
+			// Gunakan Encoding UTF8 agar karakter khusus aman
+			client->Encoding = System::Text::Encoding::UTF8;
+
 			// Kirim!
 			String^ respon = client->UploadString(url, "POST", jsonKirim);
 
-			// Sukses
-			MessageBox::Show("Terima kasih! AI telah mempelajari resep baru ini.",
+			MessageBox::Show("Terima kasih! Resep baru telah ditambahkan ke database dan dipelajari AI.",
 				"Sukses", MessageBoxButtons::OK, MessageBoxIcon::Information);
 			this->Close();
 		}
 		catch (Exception^ ex) {
-			MessageBox::Show("Gagal mengirim ke server: " + ex->Message,
+			MessageBox::Show("Gagal terhubung ke server: " + ex->Message,
 				"Error Server", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 	}

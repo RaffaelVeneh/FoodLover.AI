@@ -270,7 +270,7 @@ private: System::Windows::Forms::Label^ labelKategori;
 			// labelKategori
 			// 
 			this->labelKategori->AutoSize = true;
-			this->labelKategori->Location = System::Drawing::Point(143, 218);
+			this->labelKategori->Location = System::Drawing::Point(139, 218);
 			this->labelKategori->Name = L"labelKategori";
 			this->labelKategori->Size = System::Drawing::Size(49, 13);
 			this->labelKategori->TabIndex = 9;
