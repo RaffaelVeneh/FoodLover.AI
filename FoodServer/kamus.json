@@ -1,18 +1,167 @@
 {
   "cabe": "cabai",
+  "cabe merah": "cabai",
+  "cabe rawit": "cabai",
+  "cabe ijo": "cabai",
   "lombok": "cabai",
   "rawit": "cabai",
+  "chili": "cabai",
+  
   "bawang putih": "bawang",
   "bawang merah": "bawang",
+  "bawang bombay": "bawang",
   "bwang": "bawang",
+  "onion": "bawang",
+  "garlic": "bawang",
+  
   "telor": "telur",
+  "endog": "telur",
+  "egg": "telur",
+  "telur ayam": "telur",
+  "telur bebek": "telur",
+  
   "mi": "mie",
+  "bakmi": "mie",
   "indomie": "mie",
+  "mie instan": "mie",
+  "mie telor": "mie",
+  "noodle": "mie",
+  
   "kecap manis": "kecap",
   "kecap asin": "kecap",
+  "kecap inggris": "kecap",
+  "soya sauce": "kecap",
+  
   "tahu putih": "tahu",
   "tahu kuning": "tahu",
+  "tofu": "tahu",
+  "tahu sumedang": "tahu",
+  
   "tempe goreng": "tempe",
+  "tempe papan": "tempe",
+  "tempe daun": "tempe",
+  
   "ayam potong": "ayam",
-  "daging ayam": "ayam"
+  "daging ayam": "ayam",
+  "ayam fillet": "ayam",
+  "ayam suwir": "ayam",
+  "chicken": "ayam",
+  "dada ayam": "ayam",
+  "paha ayam": "ayam",
+  "sayap ayam": "ayam",
+  
+  "daging": "daging sapi",
+  "sapi": "daging sapi",
+  "beef": "daging sapi",
+  "tetelan": "daging sapi",
+  "iga": "daging sapi",
+  "buntut": "daging sapi",
+  
+  "kambing": "daging kambing",
+  "lamb": "daging kambing",
+  
+  "nasi putih": "nasi",
+  "sego": "nasi",
+  "rice": "nasi",
+  "beras": "nasi",
+  
+  "gula pasir": "gula",
+  "gula putih": "gula",
+  "sugar": "gula",
+  
+  "gula jawa": "gula merah",
+  "gula aren": "gula merah",
+  "brown sugar": "gula merah",
+  
+  "garam dapur": "garam",
+  "garem": "garam",
+  "uyah": "garam",
+  "salt": "garam",
+  
+  "micin": "penyedap",
+  "msg": "penyedap",
+  "royco": "kaldu",
+  "masako": "kaldu",
+  "kaldu bubuk": "kaldu",
+  "kaldu jamur": "kaldu",
+  
+  "santen": "santan",
+  "kara": "santan",
+  "coconut milk": "santan",
+  
+  "minyak goreng": "minyak",
+  "minyak sayur": "minyak",
+  "lenga": "minyak",
+  "oil": "minyak",
+  
+  "terigu": "tepung",
+  "tepung terigu": "tepung",
+  "kanji": "tepung",
+  "tapioka": "tepung",
+  "maizena": "tepung",
+  "flour": "tepung",
+  
+  "kol": "kubis",
+  "kobis": "kubis",
+  "cabbage": "kubis",
+  
+  "kenthang": "kentang",
+  "potato": "kentang",
+  
+  "wortel": "wortel",
+  "carrot": "wortel",
+  
+  "jagung manis": "jagung",
+  "corn": "jagung",
+  
+  "iwak": "ikan",
+  "fish": "ikan",
+  "ikan lele": "ikan",
+  "ikan mas": "ikan",
+  "ikan nila": "ikan",
+  "ikan gurame": "ikan",
+  
+  "ebi": "udang",
+  "shrimp": "udang",
+  "prawn": "udang",
+  "udang rebon": "udang",
+  
+  "sotong": "cumi",
+  "squid": "cumi",
+  "cumi-cumi": "cumi",
+  
+  "keju cheddar": "keju",
+  "cheese": "keju",
+  "mozarella": "keju",
+  
+  "susu cair": "susu",
+  "susu bubuk": "susu",
+  "susu kental manis": "susu",
+  "skm": "susu",
+  "milk": "susu",
+  
+  "jeruk nipis": "jeruk",
+  "jeruk limau": "jeruk",
+  "lemon": "jeruk",
+  
+  "merica": "lada",
+  "sahang": "lada",
+  "pepper": "lada",
+  "lada putih": "lada",
+  "lada hitam": "lada",
+  
+  "jae": "jahe",
+  "ginger": "jahe",
+  
+  "kunir": "kunyit",
+  "turmeric": "kunyit",
+  
+  "laos": "lengkuas",
+  
+  "sereh": "serai",
+  "sere": "serai",
+  "lemongrass": "serai",
+  
+  "tumbar": "ketumbar",
+  "coriander": "ketumbar"
 }
