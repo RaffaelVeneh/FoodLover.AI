@@ -6,6 +6,8 @@ using namespace System::Net;
 using namespace System::Text;
 using namespace System::Text::RegularExpressions;
 using namespace System::Globalization;
+using namespace Newtonsoft::Json;
+using namespace Newtonsoft::Json::Linq;
 
 namespace FoodLover {
 
@@ -50,14 +52,10 @@ namespace FoodLover {
 			}
 		}
 	private:
+		// Malas hapus, ini inisialisasi database manual
 		void InisialisasiDatabase()
 		{
-			// Buat list-nya dulu
 			databaseMenu = gcnew List<FoodLover::Menu^>();
-
-			// ---- Mari kita tambahkan beberapa resep bohongan ----
-
-			// 1. Nasi Goreng Pedas
 			List<String^>^ bahanNasiGoreng = gcnew List<String^>();
 			bahanNasiGoreng->Add("nasi");
 			bahanNasiGoreng->Add("telur");
@@ -65,21 +63,18 @@ namespace FoodLover {
 			bahanNasiGoreng->Add("cabai");
 			databaseMenu->Add(gcnew FoodLover::Menu("Nasi Goreng Pedas", "Pedas", bahanNasiGoreng));
 
-			// 2. Telur Dadar Gurih
 			List<String^>^ bahanTelurDadar = gcnew List<String^>();
 			bahanTelurDadar->Add("telur");
 			bahanTelurDadar->Add("garam");
 			bahanTelurDadar->Add("daun bawang");
 			databaseMenu->Add(gcnew FoodLover::Menu("Telur Dadar Gurih", "Gurih", bahanTelurDadar));
 
-			// 3. Pisang Goreng Manis
 			List<String^>^ bahanPisangGoreng = gcnew List<String^>();
 			bahanPisangGoreng->Add("pisang");
 			bahanPisangGoreng->Add("tepung");
 			bahanPisangGoreng->Add("gula");
 			databaseMenu->Add(gcnew FoodLover::Menu("Pisang Goreng Manis", "Manis", bahanPisangGoreng));
 
-			// 4. Ayam Rica-Rica (Contoh dari spek asli Anda)
 			List<String^>^ bahanRica = gcnew List<String^>();
 			bahanRica->Add("ayam");
 			bahanRica->Add("cabai");
@@ -97,7 +92,7 @@ namespace FoodLover {
 			array<String^>^ semuaBaris = File::ReadAllLines(namaFile);
 
 			String^ menuBerikutnya = nullptr;
-			String^ rasaBerikutnya = nullptr; // <-- Variabel baru
+			String^ rasaBerikutnya = nullptr;
 			String^ bahanBerikutnya = nullptr;
 
 			for each (String ^ baris in semuaBaris)
@@ -105,18 +100,16 @@ namespace FoodLover {
 				if (baris->StartsWith("Nama Menu: ")) {
 					menuBerikutnya = baris->Substring(11)->Trim();
 				}
-				else if (baris->StartsWith("Rasa: ")) { // <-- Logika baru
+				else if (baris->StartsWith("Rasa: ")) {
 					rasaBerikutnya = baris->Substring(6)->Trim();
 				}
-				else if (baris->StartsWith("Bahan: ")) { // <-- Logika baru
+				else if (baris->StartsWith("Bahan: ")) {
 					bahanBerikutnya = baris->Substring(7)->Trim();
 				}
 
 				// Cek jika SEMUA data sudah terkumpul
 				if (menuBerikutnya != nullptr && rasaBerikutnya != nullptr && bahanBerikutnya != nullptr)
 				{
-					// Parser bahan sekarang JAUH lebih sederhana!
-					// Kita hanya perlu split berdasarkan koma.
 					List<String^>^ listBahan = gcnew List<String^>();
 					array<String^>^ bahanArray = bahanBerikutnya->Split(',');
 
@@ -125,12 +118,10 @@ namespace FoodLover {
 						listBahan->Add(b->Trim());
 					}
 
-					// Tambahkan ke database
 					databaseMenu->Add(gcnew FoodLover::Menu(menuBerikutnya,
-						rasaBerikutnya, // <-- Gunakan rasa baru
+						rasaBerikutnya, 
 						listBahan));
 
-					// Reset untuk mencari menu berikutnya
 					menuBerikutnya = nullptr;
 					rasaBerikutnya = nullptr;
 					bahanBerikutnya = nullptr;
@@ -305,15 +296,10 @@ private: System::Windows::Forms::Label^ labelKategori;
 			String^ url = "http://127.0.0.1:5000/latih-ulang";
 			WebClient^ client = gcnew WebClient();
 
-			// Daftarkan fungsi callback tadi (agar kita tahu kapan selesainya)
 			client->DownloadStringCompleted += gcnew DownloadStringCompletedEventHandler(this, &MainForm::OnTrainingSelesai);
-
-			// PENTING: Gunakan 'Async' agar aplikasi TIDAK MACET saat loading
-			// Server akan training di background, user bisa langsung pakai aplikasi.
 			client->DownloadStringAsync(gcnew Uri(url));
 		}
 		catch (Exception^ ex) {
-			// Silent Fail: Jika server belum nyala, jangan crash. Biarkan aplikasi jalan biasa.
 			Console::WriteLine("Gagal memicu auto-training: " + ex->Message);
 		}
 	}
@@ -328,12 +314,11 @@ private: System::Windows::Forms::Label^ labelKategori;
 
 		if (String::IsNullOrEmpty(rasaInput)) { this->treeViewHasil->EndUpdate(); return; }
 
-		// Kirim data (kosong pun tetap kirim untuk trigger randomizer)
 		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
 		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\", \"kategori\": \"" + kategoriInput + "\" }";
+
 		String^ url = "http://127.0.0.1:5000/cari";
 		String^ responseServer = "";
-
 
 		try {
 			WebClient^ client = gcnew WebClient();
@@ -342,126 +327,112 @@ private: System::Windows::Forms::Label^ labelKategori;
 			responseServer = client->UploadString(url, "POST", jsonKirim);
 		}
 		catch (Exception^ ex) {
-			MessageBox::Show("Server Error: " + ex->Message);
+			MessageBox::Show("Gagal terhubung ke server AI: " + ex->Message);
 			this->treeViewHasil->EndUpdate();
 			return;
 		}
 
-		String^ satuBaris = responseServer->Replace("\r", "")->Replace("\n", "")->Trim();
-		if (satuBaris->StartsWith("[") && satuBaris->EndsWith("]")) {
-			satuBaris = satuBaris->Substring(1, satuBaris->Length - 2);
-		}
+		try {
+			JArray^ dataArray = JArray::Parse(responseServer);
 
-		if (String::IsNullOrWhiteSpace(satuBaris)) {
-			// Seharusnya ini jarang terjadi karena sekarang ada Randomizer
-			this->treeViewHasil->Nodes->Add("Tidak ada data.");
-			this->treeViewHasil->EndUpdate();
-			return;
-		}
-
-		String^ dataTerpisah = Regex::Replace(satuBaris, "\\}\\s*,\\s*\\{", "}|BATAS|{");
-		array<String^>^ listMenuRaw = dataTerpisah->Split(gcnew array<String^>{"|BATAS|"}, StringSplitOptions::RemoveEmptyEntries);
-
-		bool pesanDitampilkan = false; // Flag untuk pesan sistem
-
-		for each (String ^ menuString in listMenuRaw) {
-			String^ menuBersih = menuString->Replace("{", "")->Replace("}", "")->Replace("\"", "");
-			array<String^>^ properti = menuBersih->Split(',');
-
-			String^ namaMenu = "";
-			String^ skor = "";
-			String^ rasaMenu = "";
-			String^ bahanLengkapStr = "";
-			String^ bahanMatchStr = "";
-			String^ metaWaktu = "";
-			String^ metaKategori = "";
-			String^ metaSifat = "";
-			String^ labelAi = "TIDAK";
-			String^ pesanSistem = ""; // Variabel Baru
-
-			for each (String ^ prop in properti) {
-				String^ p = prop->Trim();
-				if (p->StartsWith("nama:")) namaMenu = p->Substring(5)->Trim();
-				else if (p->StartsWith("rasa:")) rasaMenu = p->Substring(5)->Trim();
-				else if (p->StartsWith("skor:")) skor = p->Substring(5)->Trim();
-				else if (p->StartsWith("bahan_lengkap:")) bahanLengkapStr = p->Substring(14)->Trim();
-				else if (p->StartsWith("bahan_match:")) bahanMatchStr = p->Substring(12)->Trim();
-				else if (p->StartsWith("meta_waktu:")) metaWaktu = p->Substring(11)->Trim();
-				else if (p->StartsWith("meta_kategori:")) metaKategori = p->Substring(14)->Trim();
-				else if (p->StartsWith("meta_sifat:")) metaSifat = p->Substring(11)->Trim();
-				else if (p->StartsWith("label_ai:")) labelAi = p->Substring(9)->Trim();
-				// Parsing Pesan Sistem
-				else if (p->StartsWith("pesan_sistem:")) pesanSistem = p->Substring(13)->Trim();
+			if (dataArray->Count == 0) {
+				this->treeViewHasil->Nodes->Add("Tidak ada data.");
+				this->treeViewHasil->EndUpdate();
+				return;
 			}
 
-			// 1. CEK PESAN SISTEM (Untuk Randomizer)
-			// Tampilkan pesan ini sekali saja di paling atas
-			if (!pesanDitampilkan && !String::IsNullOrEmpty(pesanSistem)) {
-				TreeNode^ nodePesan = gcnew TreeNode(pesanSistem);
-				nodePesan->ForeColor = Color::Red; // Merah agar perhatian
-				nodePesan->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Italic);
-				this->treeViewHasil->Nodes->Add(nodePesan);
-				pesanDitampilkan = true;
-			}
+			bool pesanDitampilkan = false;
 
-			// 2. RENDER MENU
-			// Logic: Jika Random, skor 0. Kita tetap tampilkan.
-			if (namaMenu != "") {
+			for each (JObject ^ menu in dataArray) {
 
-				String^ labelNode = namaMenu;
-				// Hanya tampilkan skor jika bukan hasil random (skor > 0)
-				if (skor != "0") {
-					labelNode += " (" + skor + " Cocok";
-					if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
-					labelNode += ")";
-				}
-				else {
-					// Jika random, mungkin tampilkan info rasa saja
-					labelNode += " (" + rasaMenu + ")";
-				}
+				String^ namaMenu = (String^)menu["nama"];
+				String^ skor = menu["skor"]->ToString();
+				String^ rasaMenu = (String^)menu["rasa"];
+				String^ labelAi = (String^)menu["label_ai"];
+				String^ pesanSistem = (String^)menu["pesan_sistem"];
 
-				TreeNode^ parentNode = gcnew TreeNode();
+				String^ bahanLengkapStr = (String^)menu["bahan_lengkap"];
+				String^ bahanMatchStr = (String^)menu["bahan_match"];
+				String^ metaWaktu = (String^)menu["meta_waktu"];
+				String^ metaKategori = (String^)menu["meta_kategori"];
+				String^ metaSifat = (String^)menu["meta_sifat"];
 
-				if (labelAi == "YA") {
-					parentNode->Text = "[REKOMENDASI AI] " + labelNode;
-					parentNode->ForeColor = Color::DarkViolet;
-					parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
-					parentNode->Expand();
-				}
-				else {
-					parentNode->Text = labelNode;
-					parentNode->ForeColor = Color::DarkBlue;
-					parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+				// --- LOGIKA UI (Visualisasi) ---
+				if (!pesanDitampilkan && !String::IsNullOrEmpty(pesanSistem)) {
+					TreeNode^ nodePesan = gcnew TreeNode(pesanSistem);
+					nodePesan->ForeColor = Color::Red;
+					nodePesan->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Italic);
+					this->treeViewHasil->Nodes->Add(nodePesan);
+					pesanDitampilkan = true;
 				}
 
-				// Metadata
-				TreeNode^ metaNode = gcnew TreeNode("Info & Konteks");
-				metaNode->ForeColor = Color::DarkMagenta;
-				metaNode->Nodes->Add("Kategori: " + metaKategori);
-				metaNode->Nodes->Add("Waktu: " + metaWaktu->Replace("|", ", "));
-				metaNode->Nodes->Add("Sifat: " + metaSifat->Replace("|", ", "));
-				parentNode->Nodes->Add(metaNode);
+				if (!String::IsNullOrEmpty(namaMenu)) {
+					String^ labelNode = namaMenu;
 
-				// Bahan
-				TreeNode^ bahanNode = gcnew TreeNode("Rincian Bahan");
-				array<String^>^ listBahan = bahanLengkapStr->Split('|');
-				for each (String ^ bahan in listBahan) {
-					TreeNode^ childNode = gcnew TreeNode();
-					if (bahanMatchStr->Contains(bahan) && skor != "0") {
-						childNode->Text = "v " + bahan;
-						childNode->ForeColor = Color::Green;
-						childNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+					// Hanya tampilkan skor kecocokan jika bukan hasil random (skor > 0)
+					if (skor != "0") {
+						labelNode += " (" + skor + " Cocok";
+						if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
+						labelNode += ")";
 					}
 					else {
-						childNode->Text = "- " + bahan;
-						childNode->ForeColor = Color::Gray;
+						labelNode += " (" + rasaMenu + ")";
 					}
-					bahanNode->Nodes->Add(childNode);
-				}
-				parentNode->Nodes->Add(bahanNode);
 
-				this->treeViewHasil->Nodes->Add(parentNode);
+					TreeNode^ parentNode = gcnew TreeNode();
+
+					// Cek apakah ini Rekomendasi AI (Hybrid)
+					if (labelAi == "YA") {
+						parentNode->Text = "[REKOMENDASI AI] " + labelNode;
+						parentNode->ForeColor = Color::DarkViolet;
+						parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+						// Auto expand rekomendasi AI agar user langsung lihat
+						parentNode->Expand();
+					}
+					else {
+						parentNode->Text = labelNode;
+						parentNode->ForeColor = Color::DarkBlue;
+						parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+					}
+
+					TreeNode^ metaNode = gcnew TreeNode("Info & Konteks");
+					metaNode->ForeColor = Color::DarkMagenta;
+
+					metaNode->Nodes->Add("Kategori: " + metaKategori);
+					metaNode->Nodes->Add("Waktu: " + (metaWaktu != nullptr ? metaWaktu->Replace("|", ", ") : "-"));
+					metaNode->Nodes->Add("Sifat: " + (metaSifat != nullptr ? metaSifat->Replace("|", ", ") : "-"));
+					parentNode->Nodes->Add(metaNode);
+
+					TreeNode^ bahanNode = gcnew TreeNode("Rincian Bahan");
+
+					if (!String::IsNullOrEmpty(bahanLengkapStr)) {
+						array<String^>^ listBahan = bahanLengkapStr->Split('|');
+						for each (String ^ bahan in listBahan) {
+							TreeNode^ childNode = gcnew TreeNode();
+
+							// Highlight bahan yang user miliki (Match)
+							// Kita cek apakah string bahanMatchStr mengandung bahan ini
+							if (bahanMatchStr != nullptr && bahanMatchStr->Contains(bahan) && skor != "0") {
+								childNode->Text = "v " + bahan;
+								childNode->ForeColor = Color::Green;
+								childNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
+							}
+							else {
+								childNode->Text = "- " + bahan;
+								childNode->ForeColor = Color::Gray;
+							}
+							bahanNode->Nodes->Add(childNode);
+						}
+					}
+					parentNode->Nodes->Add(bahanNode);
+
+					// Masukkan ke TreeView Utama
+					this->treeViewHasil->Nodes->Add(parentNode);
+				}
 			}
+		}
+		catch (Exception^ ex) {
+			MessageBox::Show("Error saat membaca data dari AI: " + ex->Message, "Parsing Error");
 		}
 
 		this->treeViewHasil->EndUpdate();
@@ -472,24 +443,18 @@ private: System::Windows::Forms::Label^ labelKategori;
 		form->ShowDialog();
 	}
 	private: System::Void treeViewHasil_NodeMouseDoubleClick(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e) {
-		// 1. Pastikan yang diklik adalah NAMA MENU (Parent), bukan bahan (Child)
 		// Parent node levelnya 0. Child node levelnya 1.
 		if (e->Node->Level != 0) return;
 
 		// Ambil nama menu dari teks node. 
-		// Format saat ini: "Nasi Goreng (2 Cocok...)"
-		// Kita harus membuang bagian dalam kurung (...)
 		String^ teksNode = e->Node->Text;
 		int indexKurung = teksNode->IndexOf("(");
-		if (indexKurung < 0) return; // Validasi
+		if (indexKurung < 0) return;
 
 		String^ namaMenuFix = teksNode->Substring(0, indexKurung)->Trim();
-
-		// 2. Siapkan Data untuk dikirim ke Server
 		String^ inputBahan = this->txtBahan->Text->Replace("\n", " ")->Replace("\"", "");
 		String^ rasaInput = this->comboRasa->Text;
 
-		// Dapatkan Waktu Sekarang (Pagi/Siang/Malam) untuk Metadata
 		int jam = DateTime::Now.Hour;
 		String^ waktuSekarang = "malam";
 		if (jam >= 5 && jam < 11) waktuSekarang = "pagi";
@@ -507,22 +472,15 @@ private: System::Windows::Forms::Label^ labelKategori;
 			inputBahan, rasaInput, namaMenuFix, waktuSekarang, DateTime::Now.ToString("yyyy-MM-dd HH:mm:ss")
 		);
 
-		// 3. Kirim ke Server (Background Process biar UI gak macet)
 		try {
 			String^ url = "http://127.0.0.1:5000/catat-pilihan";
 			WebClient^ client = gcnew WebClient();
 			client->Headers->Add("Content-Type", "application/json");
-
-			// Kita gunakan Async agar UI tidak nge-lag sedikitpun
 			client->UploadStringAsync(gcnew Uri(url), "POST", jsonLog);
 
-			// Feedback Visual Halus (Opsional):
-			// Anda bisa mengubah warna node sebentar atau bunyi 'beep' kecil
-			// Tapi untuk sekarang, kita biarkan benar-benar silent.
 			Console::WriteLine("Log terkirim untuk: " + namaMenuFix);
 		}
 		catch (Exception^ ex) {
-			// Silent error (jangan ganggu user kalau log gagal)
 			Console::WriteLine("Gagal log: " + ex->Message);
 		}
 	}
