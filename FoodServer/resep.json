@@ -1539,5 +1539,30 @@
         "sehat"
       ]
     }
+  },
+  {
+    "nama": "Lele Penyet",
+    "rasa": "Gurih",
+    "bahan": [
+      "lele",
+      "garam",
+      "kunyit",
+      "kemiri",
+      "ketumbar",
+      "merica",
+      "bawang",
+      "putih",
+      "bawang",
+      "merah"
+    ],
+    "metadata": {
+      "waktu": [
+        "kapanpun"
+      ],
+      "kategori": "Makanan",
+      "sifat": [
+        "umum"
+      ]
+    }
   }
 ]
