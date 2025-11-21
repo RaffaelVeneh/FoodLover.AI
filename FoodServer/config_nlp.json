@@ -1,0 +1,37 @@
+{
+  "kamus_alay": {
+    "4": "a", "@": "a",
+    "3": "e",
+    "1": "i", "!": "i",
+    "0": "o",
+    "5": "s", "$": "s",
+    "2": "z",
+    "6": "b",
+    "8": "b",
+    "9": "g",
+    "g4k": "tidak", "gak": "tidak", "ga": "tidak"
+  },
+  "stopwords": [
+    "aku", "saya", "gue", "ingin", "pengen", "mau", "minta", "dong", 
+    "tolong", "carikan", "menu", "resep", "yang", "dan", "atau", "masak", 
+    "buat", "bikin", "hari", "ini", "untuk", "makan", "minum", "lagi", "sedang"
+  ],
+  "bahan_pokok": [
+    "nasi", "beras", "mie", "mi", "bakmi", "indomie",
+    "bihun", "soun", "kwetiau", "spaghetti", "pasta", 
+    "macaroni", "fettucini", "lontong", "ketupat", "roti", "bubur"
+  ],
+  "keywords_kategori": {
+    "minuman": "minuman", "minum": "minuman", "segar": "minuman", "haus": "minuman",
+    "makanan": "makanan", "laper": "makanan", "lapar": "makanan", "berat": "makanan",
+    "cemilan": "camilan", "camilan": "camilan", "snack": "camilan", "jajan": "camilan"
+  },
+  "keywords_rasa": {
+    "pedas": "Pedas", "hot": "Pedas", "cabe": "Pedas", "lombok": "Pedas",
+    "manis": "Manis", "gula": "Manis",
+    "gurih": "Gurih", "asin": "Gurih",
+    "asam": "Asam", "kecut": "Asam", "seger": "Segar",
+    "pahit": "Pahit", "kopi": "Pahit",
+    "creamy": "Creamy", "susu": "Creamy"
+  }
+}
