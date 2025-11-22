@@ -377,10 +377,13 @@ def analisa_bahasa_natural(teks_user):
     
     Database resep memiliki metadata 'sifat': [kuah, goreng, bakar, tumis, basah, kering, hangat, dingin].
 
-    Instruksi:
+    Instruksi PENTING:
     1. Identifikasi 'bahan' (array string). Jika user menyebut 'flu' atau 'sakit', sarankan bahan seperti 'jahe', 'sup', 'ayam'.
     2. Identifikasi 'rasa' (string). Default 'Semua' jika tidak disebut.
-    3. Identifikasi 'kategori' (string).
+    3. Identifikasi 'kategori'.
+       - Jika ada kata "makan", "laper", "berat" -> kategori: "Makanan".
+       - Jika ada kata "minum", "haus", "segar" -> kategori: "Minuman".
+       - Jika ada kata "ngemil", "snack" -> kategori: "Camilan".
     4. Jika user meminta rekomendasi tanpa bahan (misal: "pengen yang anget"), cari bahan implisit yang cocok.
     5. Identifikasi 'sifat': Array string. Ambil dari konteks. 
        - Contoh: "sakit flu", "anget", "sup" -> sifat: ["kuah", "hangat"].
@@ -490,6 +493,7 @@ def cari_resep():
     
     # --- PROSES LLM ---
     butuh_llm = cek_perlu_llm(raw_input)
+    pake_llm_sukses = False
     
     if butuh_llm:
         print(f"[AI] Menganalisa konteks: '{raw_input}'...")
@@ -497,6 +501,7 @@ def cari_resep():
         
         if hasil_analisa:
             print(f"[AI] Hasil Pemahaman: {hasil_analisa}")
+            pake_llm_sukses = True
             
             # Ambil Bahan
             if hasil_analisa.get('bahan'):
@@ -515,7 +520,7 @@ def cari_resep():
                 target_waktu = hasil_analisa['waktu'].lower()
 
     # --- FALLBACK / KEYWORD MATCHING ---
-    if not list_bahan_user: 
+    if not list_bahan_user and not pake_llm_sukses: 
         KATA_NEGATIF = {"tidak", "nggak", "gak", "g4k", "jangan", "bukan", "no", "anti", "ga"}
         raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
         skip_indices = set()
