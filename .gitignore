@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /FoodServer/history.json
 /FoodServer/update_db_v2.py
 /FoodServer/update_db.py
+/FoodServer/API_KEY.json

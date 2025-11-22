@@ -4,16 +4,19 @@ import re
 import datetime
 import joblib
 import numpy as np
+import pandas as pd
 import random
 from flask import Flask, request, jsonify
 from collections import Counter
 from thefuzz import fuzz
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
-import pandas as pd
+from groq import Groq
 
 app = Flask(__name__)
 
+
+    
 NAMA_FILE_DB = 'resep.json'
 NAMA_FILE_KAMUS = 'kamus.json'
 NAMA_FILE_LOG = 'history.json'
@@ -32,6 +35,19 @@ def muat_json(nama_file):
         with open(nama_file, 'r') as f: return json.load(f)
     except: return {}
 
+API_KEY = muat_json('API_KEY.json')
+GROQ_API_KEY = API_KEY.get("groq_api_key", "") 
+try:
+    if not GROQ_API_KEY:
+        raise Exception("API Key tidak ditemukan di API_KEY.json")
+        
+    client_llm = Groq(api_key=GROQ_API_KEY)
+    USE_LLM = True
+    print("[INFO] LLM Activated (Groq/Llama-3.3-70b)")
+except Exception as e:
+    USE_LLM = False
+    print(f"[WARNING] LLM Inactive: {e}")
+    
 CONFIG_NLP = muat_json(NAMA_FILE_CONFIG_NLP)
 KAMUS_ALAY = CONFIG_NLP.get('kamus_alay', {})
 STOPWORDS = set(CONFIG_NLP.get('stopwords', []))
@@ -320,13 +336,107 @@ def latih_ulang_otak():
     
     return f"Berhasil dilatih dengan {len(df_final)} data (Base + History)."
 
+def analisa_bahasa_natural(teks_user):
+    if not USE_LLM: return None
+
+    # Prompt System: Menginstruksikan LLM cara bekerja
+    system_prompt = f"""
+    Kamu adalah asisten koki AI. Tugasmu adalah mengekstrak entitas dari input user menjadi format JSON.
+    
+    Database kami memiliki data:
+    - Rasa: Pedas, Manis, Gurih, Asam, Segar
+    - Kategori: Makanan, Minuman, Camilan
+    - Bahan Pokok: {', '.join(list(BAHAN_POKOK))}
+    
+    Database resep memiliki metadata 'sifat': [kuah, goreng, bakar, tumis, basah, kering, hangat, dingin].
+
+    Instruksi:
+    1. Identifikasi 'bahan' (array string). Jika user menyebut 'flu' atau 'sakit', sarankan bahan seperti 'jahe', 'sup', 'ayam'.
+    2. Identifikasi 'rasa' (string). Default 'Semua' jika tidak disebut.
+    3. Identifikasi 'kategori' (string).
+    4. Jika user meminta rekomendasi tanpa bahan (misal: "pengen yang anget"), cari bahan implisit yang cocok.
+    5. Identifikasi 'sifat': Array string. Ambil dari konteks. 
+       - Contoh: "sakit flu", "anget", "sup" -> sifat: ["kuah", "hangat"].
+       - Contoh: "kriuk", "garing" -> sifat: ["goreng", "kering"].
+    
+    Output HARUS JSON murni:
+    {{
+        "bahan": ["..."],
+        "rasa": "...",
+        "exclude_rasa": "...", 
+        "kategori": "...",
+        "sifat": ["..."]
+    }}
+    """
+
+    try:
+        chat_completion = client_llm.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": teks_user}
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+        
+        hasil_json = chat_completion.choices[0].message.content
+        return json.loads(hasil_json)
+    except Exception as e:
+        print(f"[LLM ERROR] {e}")
+        return None
+    
 # --- ROUTES ---
 @app.route('/cari', methods=['POST'])
 def cari_resep():
     data_masuk = request.get_json()
-    input_bahan_raw = data_masuk.get('bahan', '')
-    input_rasa = data_masuk.get('rasa', 'Semua')
-    input_kategori = data_masuk.get('kategori', 'Semua')
+    raw_input = data_masuk.get('bahan', '') 
+    
+    target_rasa = data_masuk.get('rasa', 'Semua')
+    target_kategori = data_masuk.get('kategori', 'Semua')
+    target_sifat = []
+    exclude_rasa = None
+    list_bahan_user = []
+    
+    pakai_logika_lama = True
+    
+    # --- PROSES LLM ---
+    if len(raw_input.split()) > 1:
+        print(f"[AI] Menganalisa konteks: '{raw_input}'...")
+        hasil_analisa = analisa_bahasa_natural(raw_input)
+        
+        if hasil_analisa:
+            print(f"[AI] Hasil Pemahaman: {hasil_analisa}")
+            
+            # Ambil Bahan
+            if hasil_analisa.get('bahan'):
+                list_bahan_user = [b.lower() for b in hasil_analisa['bahan']]
+                pakai_logika_lama = False 
+            
+            # Ambil Rasa & Kategori
+            if hasil_analisa.get('rasa') and hasil_analisa['rasa'] != "Semua":
+                target_rasa = hasil_analisa['rasa']
+            if hasil_analisa.get('kategori') and hasil_analisa['kategori'] != "Semua":
+                target_kategori = hasil_analisa['kategori']
+            if hasil_analisa.get('sifat'):
+                target_sifat = [s.lower() for s in hasil_analisa['sifat']]
+            
+            if hasil_analisa.get('exclude_rasa'):
+                exclude_rasa = hasil_analisa['exclude_rasa']
+
+    # --- 2. LOGIKA LAMA (FALLBACK / KEYWORD MATCHING) ---
+    if pakai_logika_lama:
+        raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
+        for b in raw_split:
+            b_bersih = normalisasi_alay(b)
+            if b_bersih in STOPWORDS: continue
+            if b_bersih in KEYWORDS_KATEGORI:
+                target_kategori = KEYWORDS_KATEGORI[b_bersih]; continue
+            if b_bersih in KEYWORDS_RASA:
+                target_rasa = KEYWORDS_RASA[b_bersih]; continue
+            
+            b_final = CACHE_KAMUS.get(b_bersih, b_bersih)
+            list_bahan_user.append(b_final)
     
     jam = datetime.datetime.now().hour
     waktu_server = "malam"
@@ -335,13 +445,14 @@ def cari_resep():
     elif 15 <= jam < 19: waktu_server = "sore"
 
     database_menu = muat_json(NAMA_FILE_DB)
-    
-    list_bahan_user = []
     user_staples = set()
+    for b in list_bahan_user:
+        if b in BAHAN_POKOK: user_staples.add(b)
+        
     nlp_kategori = None
     nlp_rasa = None
     
-    raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', input_bahan_raw) if x]
+    raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
     
     for b in raw_split:
         b_bersih = normalisasi_alay(b)
@@ -361,8 +472,8 @@ def cari_resep():
         list_bahan_user.append(b_final)
         if b_final in BAHAN_POKOK: user_staples.add(b_final)
 
-    target_kategori = nlp_kategori if nlp_kategori else input_kategori
-    target_rasa = nlp_rasa if nlp_rasa else input_rasa
+    target_kategori = nlp_kategori if nlp_kategori else target_kategori
+    target_rasa = nlp_rasa if nlp_rasa else target_rasa
 
     # KONDISI 1: INPUT MEMANG KOSONG (User cuma klik cari / main dropdown)
     # raw_split kosong artinya user tidak mengetik apa-apa
@@ -379,6 +490,12 @@ def cari_resep():
     hasil_sementara = []
     
     for menu in database_menu:
+        meta = menu.get('metadata', {})
+        
+        # FILTER NEGATIF
+        if exclude_rasa and menu.get('rasa', '').lower() == exclude_rasa.lower():
+            continue
+        
         # Filter Rasa
         if target_rasa != "Semua" and menu.get('rasa', '').lower() != target_rasa.lower(): continue
         
@@ -391,6 +508,19 @@ def cari_resep():
             elif t == "minuman" and menu_kat != "minuman": continue
             elif t == "camilan" and menu_kat != "camilan": continue
 
+        # Filter Sifat
+        if target_sifat:
+            menu_sifat_list = [s.lower() for s in meta.get('sifat', [])]
+            
+            ketemu_sifat = False
+            for s_target in target_sifat:
+                if s_target in menu_sifat_list:
+                    ketemu_sifat = True
+                    break
+            
+            if not ketemu_sifat:
+                continue
+            
         # Strict Filter
         semua_bahan_resep = menu.get('bahan', [])
         if len(user_staples) > 0:
@@ -409,9 +539,19 @@ def cari_resep():
             for bu in list_bahan_user:
                 if cek_kemiripan(bu, br): skor += 1; bahan_cocok_list.append(b_resep); break 
         
-        if skor > 0:
-            relevansi = skor / len(list_bahan_user)
+        isValid = False
+        # Kondisi A: Ada kecocokan bahan
+        if skor > 0: isValid = True
+        
+        # Kondisi B: Tidak input bahan, tapi SIFAT cocok (Contextual Search)
+        elif len(list_bahan_user) == 0 and len(target_sifat) > 0: isValid = True
+        
+        if isValid:
+            relevansi = skor / len(list_bahan_user) if len(list_bahan_user) > 0 else 1.0
             is_ai = (ai_suggestion and ai_suggestion.startswith(menu['nama']))
+            
+            if target_sifat: relevansi += 0.5
+            
             hasil_sementara.append({
                 "nama": menu['nama'], "rasa": menu.get('rasa', 'Umum'),
                 "skor": skor, "relevansi": relevansi, "is_ai": is_ai,
