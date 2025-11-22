@@ -1,0 +1,26 @@
+{
+  "enaknya besok pagi sarapan apa ya?": {
+    "bahan": [],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "Pagi",
+    "sifat": []
+  },
+  "malam ini enaknya makan apa ya?": {
+    "bahan": [],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "Malam",
+    "sifat": []
+  },
+  "besok sarapan apa ya kira-kira?": {
+    "bahan": [],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "Pagi",
+    "sifat": []
+  }
+}

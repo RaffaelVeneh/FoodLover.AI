@@ -23,6 +23,7 @@ NAMA_FILE_LOG = 'history.json'
 NAMA_FILE_MODEL = 'model_cerdas.pkl'
 NAMA_FILE_ENCODER = 'encoder_bahan.pkl'
 NAMA_FILE_CONFIG_NLP = 'config_nlp.json'
+NAMA_FILE_CACHE_QUERY = 'cache_query.json'
 
 def muat_json(nama_file):
     if not os.path.exists(nama_file): 
@@ -34,6 +35,17 @@ def muat_json(nama_file):
     try:
         with open(nama_file, 'r') as f: return json.load(f)
     except: return {}
+
+CACHE_QUERY = muat_json(NAMA_FILE_CACHE_QUERY)
+if isinstance(CACHE_QUERY, list):
+    CACHE_QUERY = {}
+
+def simpan_cache_query():
+    try:
+        with open(NAMA_FILE_CACHE_QUERY, 'w') as f:
+            json.dump(CACHE_QUERY, f, indent=2)
+    except Exception as e:
+        print(f"[ERROR] Gagal menyimpan cache: {e}")
 
 API_KEY = muat_json('API_KEY.json')
 GROQ_API_KEY = API_KEY.get("groq_api_key", "") 
@@ -366,6 +378,14 @@ def latih_ulang_otak():
 def analisa_bahasa_natural(teks_user):
     if not USE_LLM: return None
 
+    kunci_cache = normalisasi_alay(teks_user).strip()
+    if kunci_cache in CACHE_QUERY:
+        print(f"[CACHE] HORE! Menemukan ingatan lama untuk: '{teks_user}'")
+        print(f"[CACHE] Menggunakan data: {CACHE_QUERY[kunci_cache]}")
+        return CACHE_QUERY[kunci_cache]
+    
+    print(f"[AI] Query baru, sedang berpikir keras untuk: '{teks_user}'...")
+    
     # Prompt System: Menginstruksikan LLM cara bekerja
     system_prompt = f"""
     Kamu adalah asisten koki AI. Tugasmu adalah mengekstrak entitas dari input user menjadi format JSON.
@@ -415,8 +435,14 @@ def analisa_bahasa_natural(teks_user):
             response_format={"type": "json_object"}
         )
         
-        hasil_json = chat_completion.choices[0].message.content
-        return json.loads(hasil_json)
+        hasil_raw = chat_completion.choices[0].message.content
+        hasil_json = json.loads(hasil_raw)
+        
+        CACHE_QUERY[kunci_cache] = hasil_json
+        simpan_cache_query()
+        print(f"[CACHE] Disimpan ke ingatan baru.")
+        
+        return hasil_json
     except Exception as e:
         print(f"[LLM ERROR] {e}")
         return None
