@@ -90,7 +90,8 @@ def normalisasi_alay(teks):
     if not teks: return ""
     teks_bersih = teks.lower()
     for alay, normal in KAMUS_ALAY.items():
-        teks_bersih = teks_bersih.replace(alay, normal)
+        pattern = r'\b' + re.escape(alay) + r'\b'
+        teks_bersih = re.sub(pattern, normal, teks_bersih)
     teks_bersih = re.sub(r'(.)\1+', r'\1', teks_bersih)
     return teks_bersih
 
@@ -601,7 +602,11 @@ def cari_resep():
             if hasil_analisa.get('exclude_rasa'):
                 exclude_rasa = hasil_analisa['exclude_rasa']
             if hasil_analisa.get('waktu'):
-                target_waktu = hasil_analisa['waktu'].lower()
+                waktu_llm = hasil_analisa['waktu'].lower()
+                if waktu_llm == "semua":
+                    target_waktu = None
+                else:
+                    target_waktu = waktu_llm
 
     # --- FALLBACK / KEYWORD MATCHING ---
     if not list_bahan_user and not pake_llm_sukses: 
