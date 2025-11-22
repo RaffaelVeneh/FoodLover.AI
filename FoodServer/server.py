@@ -54,6 +54,7 @@ STOPWORDS = set(CONFIG_NLP.get('stopwords', []))
 BAHAN_POKOK = set(CONFIG_NLP.get('bahan_pokok', []))
 KEYWORDS_KATEGORI = CONFIG_NLP.get('keywords_kategori', {})
 KEYWORDS_RASA = CONFIG_NLP.get('keywords_rasa', {})
+KEYWORDS_WAKTU = CONFIG_NLP.get('keywords_waktu', {})
 CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
 
 # Load Model AI
@@ -142,12 +143,19 @@ def cek_kemiripan(bahan_user, bahan_resep):
     return False
 
 # --- LOGIKA REKOMENDASI (PERSONALIZED) ---
-def get_personalized_recommendations(database, limit=10, filter_kat="Semua", filter_rasa="Semua", pesan_khusus=""):
+def get_personalized_recommendations(database, limit=10, filter_kat="Semua", filter_rasa="Semua", pesan_khusus="", filter_waktu=None):
     # 1. FILTER DATABASE
     db_filtered = []
+    
+    target_kat = filter_kat.lower() if filter_kat else "semua"
+    target_rasa = filter_rasa.lower() if filter_rasa else "semua"
+    target_waktu = filter_waktu.lower() if filter_waktu else None
+    
     for m in database:
         meta = m.get('metadata', {})
         kat_menu = meta.get('kategori', 'umum').lower()
+        rasa_menu = m.get('rasa', '').lower()
+        waktu_menu = [w.lower() for w in meta.get('waktu', ['kapanpun'])]
         if filter_kat != "Semua":
             target = filter_kat.lower()
             if target == "makanan" and kat_menu == "minuman": continue
@@ -156,15 +164,25 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
         
         if filter_rasa != "Semua" and m.get('rasa', '').lower() != filter_rasa.lower():
             continue
+        if filter_waktu:
+            menu_waktu = [w.lower() for w in meta.get('waktu', ['kapanpun'])]
+            if "kapanpun" not in menu_waktu and filter_waktu not in menu_waktu:
+                continue
         db_filtered.append(m)
 
     # UBAH PESAN DISINI (Jika filter tidak menemukan hasil apapun)
     if not db_filtered:
+        msg_waktu = f" di waktu '{filter_waktu}'" if filter_waktu else ""
         return [{
-            "nama": "Maaf...", "rasa": "-", "skor": 0, "relevansi": 0, "is_ai": False,
-            "bahan_lengkap": "-", "bahan_match": "", "meta_waktu": "-", "meta_kategori": "-", "meta_sifat": "-", 
+            "nama": "Maaf, Menu Tidak Ditemukan", 
+            "rasa": "-", 
+            "skor": 0, 
+            "relevansi": 0, 
+            "is_ai": False,
+            "bahan_lengkap": "-", "bahan_match": "", 
+            "meta_waktu": "-", "meta_kategori": "-", "meta_sifat": "-", 
             "label_ai": "TIDAK",
-            "pesan_sistem": f"Menu yang kamu cari tidak ada untuk kategori '{filter_kat}' & rasa '{filter_rasa}'."
+            "pesan_sistem": f"Tidak ada menu yang cocok untuk kategori '{filter_kat}', rasa '{filter_rasa}'{msg_waktu}. Coba ubah filter."
         }]
 
     history = muat_json(NAMA_FILE_LOG)
@@ -181,10 +199,11 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
             if menu['nama'] in top_menu_names:
                 meta = menu.get('metadata', {})
                 hasil_personal.append({
-                    "nama": menu['nama'], "rasa": menu.get('rasa', 'Umum'),
+                    "nama": menu['nama'], 
+                    "rasa": menu.get('rasa', 'Umum'),
                     "skor": 0, "relevansi": 1.0, "is_ai": True,
                     "bahan_lengkap": "|".join(menu.get('bahan', [])),
-                    "bahan_match": "(Sesuai Selera)",
+                    "bahan_match": "(Favoritmu)",
                     "meta_waktu": "|".join(meta.get('waktu', ['kapanpun'])),
                     "meta_kategori": meta.get('kategori', 'umum'),
                     "meta_sifat": "|".join(meta.get('sifat', ['umum'])),
@@ -202,7 +221,8 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
             for menu in tambahan_random:
                 meta = menu.get('metadata', {})
                 hasil_personal.append({
-                    "nama": menu['nama'], "rasa": menu.get('rasa', 'Umum'),
+                    "nama": menu['nama'], 
+                    "rasa": menu.get('rasa', 'Umum'),
                     "skor": 0, "relevansi": 0, "is_ai": False,
                     "bahan_lengkap": "|".join(menu.get('bahan', [])),
                     "bahan_match": "",
@@ -215,11 +235,11 @@ def get_personalized_recommendations(database, limit=10, filter_kat="Semua", fil
     # 4. SET PESAN SISTEM (UBAH PESAN GIBBERISH DISINI)
     if hasil_personal:
         if pesan_khusus:
-            # Ini yang diganti (saat input gibberish/ngawur)
-            hasil_personal[0]['pesan_sistem'] = "Menu yang kamu cari tidak ada. Berikut rekomendasi makanan/minuman untukmu:"
+            hasil_personal[0]['pesan_sistem'] = pesan_khusus
         else:
             kategori_msg = filter_kat if filter_kat != "Semua" else "makanan/minuman"
-            hasil_personal[0]['pesan_sistem'] = f"Rekomendasi {kategori_msg} pilihan untukmu:"
+            waktu_msg = f" ({filter_waktu})" if filter_waktu else ""
+            hasil_personal[0]['pesan_sistem'] = f"Rekomendasi {kategori_msg}{waktu_msg} pilihan untukmu:"
         
     return hasil_personal
 
@@ -358,6 +378,7 @@ def analisa_bahasa_natural(teks_user):
     5. Identifikasi 'sifat': Array string. Ambil dari konteks. 
        - Contoh: "sakit flu", "anget", "sup" -> sifat: ["kuah", "hangat"].
        - Contoh: "kriuk", "garing" -> sifat: ["goreng", "kering"].
+    6. Identifikasi 'waktu': Pagi / Siang / Sore / Malam. (Ambil dari konteks seperti 'sarapan', 'dinner').
     
     Output HARUS JSON murni:
     {{
@@ -365,6 +386,7 @@ def analisa_bahasa_natural(teks_user):
         "rasa": "...",
         "exclude_rasa": "...", 
         "kategori": "...",
+        "waktu": "...",
         "sifat": ["..."]
     }}
     """
@@ -405,6 +427,7 @@ def cek_perlu_llm(teks_raw):
             
     vocab_rasa = set([k.lower() for k in KEYWORDS_RASA.keys()])
     vocab_kategori = set([k.lower() for k in KEYWORDS_KATEGORI.keys()])
+    vocab_waktu = set([k.lower() for k in KEYWORDS_WAKTU.keys()])
     vocab_kamus = set([k.lower() for k in CACHE_KAMUS.keys()]) # kata asal (misal: 'endog')
     
     skor_asing = 0
@@ -418,6 +441,7 @@ def cek_perlu_llm(teks_raw):
             kata in vocab_bahan or 
             kata in vocab_rasa or 
             kata in vocab_kategori or
+            kata in vocab_waktu or
             kata in vocab_kamus or
             kata in BAHAN_POKOK
         )
@@ -447,6 +471,7 @@ def cari_resep():
     
     target_rasa = data_masuk.get('rasa', 'Semua')
     target_kategori = data_masuk.get('kategori', 'Semua')
+    target_waktu = None
     target_sifat = []
     exclude_rasa = None
     list_bahan_user = []
@@ -477,17 +502,23 @@ def cari_resep():
                 target_sifat = [s.lower() for s in hasil_analisa['sifat']]
             if hasil_analisa.get('exclude_rasa'):
                 exclude_rasa = hasil_analisa['exclude_rasa']
+            if hasil_analisa.get('waktu'):
+                target_waktu = hasil_analisa['waktu'].lower()
 
-    # --- 2. LOGIKA LAMA (FALLBACK / KEYWORD MATCHING) ---
-    if pakai_logika_lama:
+    # --- FALLBACK / KEYWORD MATCHING ---
+    if not list_bahan_user: 
         raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
         for b in raw_split:
             b_bersih = normalisasi_alay(b)
             if b_bersih in STOPWORDS: continue
+            
+            # Deteksi Keyword Spesifik
             if b_bersih in KEYWORDS_KATEGORI:
                 target_kategori = KEYWORDS_KATEGORI[b_bersih]; continue
             if b_bersih in KEYWORDS_RASA:
                 target_rasa = KEYWORDS_RASA[b_bersih]; continue
+            if b_bersih in KEYWORDS_WAKTU:
+                target_waktu = KEYWORDS_WAKTU[b_bersih]; continue
             
             b_final = CACHE_KAMUS.get(b_bersih, b_bersih)
             list_bahan_user.append(b_final)
@@ -497,64 +528,35 @@ def cari_resep():
     if 5 <= jam < 11: waktu_server = "pagi"
     elif 11 <= jam < 15: waktu_server = "siang"
     elif 15 <= jam < 19: waktu_server = "sore"
-
+    waktu_final = target_waktu if target_waktu else waktu_server
+    
     database_menu = muat_json(NAMA_FILE_DB)
+    if not list_bahan_user:
+        return jsonify(get_personalized_recommendations(
+            database_menu, 
+            limit=10, 
+            filter_kat=target_kategori, 
+            filter_rasa=target_rasa, 
+            filter_waktu=waktu_final
+        ))
+        
     user_staples = set()
     for b in list_bahan_user:
         if b in BAHAN_POKOK: user_staples.add(b)
-        
-    nlp_kategori = None
-    nlp_rasa = None
-    
-    raw_split = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
-    
-    for b in raw_split:
-        b_bersih = normalisasi_alay(b)
-        
-        # Cek Stopwords
-        if b_bersih in STOPWORDS: continue
-        
-        # Cek Keyword Kategori
-        if b_bersih in KEYWORDS_KATEGORI:
-            nlp_kategori = KEYWORDS_KATEGORI[b_bersih]; continue
-        
-        # Cek Keyword Rasa
-        if b_bersih in KEYWORDS_RASA:
-            nlp_rasa = KEYWORDS_RASA[b_bersih]; continue
-            
-        b_final = CACHE_KAMUS.get(b_bersih, b_bersih)
-        list_bahan_user.append(b_final)
-        if b_final in BAHAN_POKOK: user_staples.add(b_final)
 
-    target_kategori = nlp_kategori if nlp_kategori else target_kategori
-    target_rasa = nlp_rasa if nlp_rasa else target_rasa
-
-    # KONDISI 1: INPUT MEMANG KOSONG (User cuma klik cari / main dropdown)
-    # raw_split kosong artinya user tidak mengetik apa-apa
-    if not raw_split:
-        return jsonify(get_personalized_recommendations(database_menu, 10, target_kategori, target_rasa))
-
-    # KONDISI 2: INPUT ADA, TAPI HABIS DIMAKAN STOPWORDS/KEYWORDS (User ketik "aku mau minum")
-    # list_bahan_user kosong, tapi raw_split ada isinya
-    if not list_bahan_user:
-        return jsonify(get_personalized_recommendations(database_menu, 10, target_kategori, target_rasa))
-
-    # --- PENCARIAN DIMULAI ---
     ai_suggestion = tanya_ai(list_bahan_user, waktu_server)
     hasil_sementara = []
     
     for menu in database_menu:
         meta = menu.get('metadata', {})
         
-        # FILTER NEGATIF
-        if exclude_rasa and menu.get('rasa', '').lower() == exclude_rasa.lower():
-            continue
+        # Filter Negatif (Exclude Rasa)
+        if exclude_rasa and menu.get('rasa', '').lower() == exclude_rasa.lower(): continue
         
         # Filter Rasa
         if target_rasa != "Semua" and menu.get('rasa', '').lower() != target_rasa.lower(): continue
         
         # Filter Kategori
-        meta = menu.get('metadata', {})
         menu_kat = meta.get('kategori', 'umum').lower()
         if target_kategori != "Semua":
             t = target_kategori.lower()
@@ -562,20 +564,22 @@ def cari_resep():
             elif t == "minuman" and menu_kat != "minuman": continue
             elif t == "camilan" and menu_kat != "camilan": continue
 
-        # Filter Sifat
+        # Filter Sifat (Jika ada dari LLM)
         if target_sifat:
             menu_sifat_list = [s.lower() for s in meta.get('sifat', [])]
-            
             ketemu_sifat = False
             for s_target in target_sifat:
                 if s_target in menu_sifat_list:
-                    ketemu_sifat = True
-                    break
+                    ketemu_sifat = True; break
+            if not ketemu_sifat: continue
+        
+        # Filter Waktu
+        menu_waktu_list = [w.lower() for w in meta.get('waktu', ['kapanpun'])]
+        if target_waktu and "kapanpun" not in menu_waktu_list:
+             if waktu_final not in menu_waktu_list:
+                 continue
             
-            if not ketemu_sifat:
-                continue
-            
-        # Strict Filter
+        # Filter Bahan Pokok (Strict)
         semua_bahan_resep = menu.get('bahan', [])
         if len(user_staples) > 0:
             present = False
@@ -583,9 +587,9 @@ def cari_resep():
                 for s in user_staples:
                     if cek_kemiripan(s, b_r.lower()): present = True; break
                 if present: break
-            if not present: continue 
+            if not present: continue
 
-        # Scoring
+        # Scoring Kecocokan Bahan
         skor = 0
         bahan_cocok_list = []
         for b_resep in semua_bahan_resep:
@@ -594,27 +598,28 @@ def cari_resep():
                 if cek_kemiripan(bu, br): skor += 1; bahan_cocok_list.append(b_resep); break 
         
         isValid = False
-        # Kondisi A: Ada kecocokan bahan
         if skor > 0: isValid = True
-        
-        # Kondisi B: Tidak input bahan, tapi SIFAT cocok (Contextual Search)
-        elif len(list_bahan_user) == 0 and len(target_sifat) > 0: isValid = True
+        # Jika context search (tanpa bahan spesifik tapi sifat cocok), anggap valid
+        elif target_sifat and not list_bahan_user: isValid = True
         
         if isValid:
-            relevansi = skor / len(list_bahan_user) if len(list_bahan_user) > 0 else 1.0
+            relevansi = skor / len(list_bahan_user) if list_bahan_user else 1.0
             is_ai = (ai_suggestion and ai_suggestion.startswith(menu['nama']))
-            
             if target_sifat: relevansi += 0.5
             
             hasil_sementara.append({
-                "nama": menu['nama'], "rasa": menu.get('rasa', 'Umum'),
-                "skor": skor, "relevansi": relevansi, "is_ai": is_ai,
+                "nama": menu['nama'], 
+                "rasa": menu.get('rasa', 'Umum'),
+                "skor": skor,
+                "relevansi": relevansi, 
+                "is_ai": is_ai,
                 "bahan_lengkap": "|".join(semua_bahan_resep),
                 "bahan_match": "|".join(bahan_cocok_list),
                 "meta_waktu": "|".join(meta.get('waktu', ['kapanpun'])),
                 "meta_kategori": meta.get('kategori', 'umum'),
                 "meta_sifat": "|".join(meta.get('sifat', ['umum'])),
-                "label_ai": "YA" if is_ai else "TIDAK", "pesan_sistem": ""
+                "label_ai": "YA" if is_ai else "TIDAK", 
+                "pesan_sistem": ""
             })
 
     # KONDISI 3: GIBBERISH / TIDAK ADA HASIL (Pencarian Gagal Total)

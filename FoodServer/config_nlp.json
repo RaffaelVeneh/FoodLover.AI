@@ -18,7 +18,7 @@
     "aku", "saya", "gue", "ingin", "pengen", "mau", "minta", "dong", 
     "tolong", "carikan", "menu", "resep", "yang", "dan", "atau", "masak", 
     "buat", "bikin", "hari", "ini", "untuk", "makan", "minum", "lagi", "sedang",
-    "cari", "ada", "nggak", "tidak"
+    "cari", "ada", "nggak", "tidak", "rekomendasi"
   ],
   "bahan_pokok": [
     "nasi", "beras", "mie", "mi", "bakmi", "indomie",
@@ -37,5 +37,12 @@
     "asam": "Asam", "kecut": "Asam", "seger": "Segar",
     "pahit": "Pahit", "kopi": "Pahit",
     "creamy": "Creamy", "susu": "Creamy"
+  },
+  "keywords_waktu": {
+    "pagi": "pagi", "sarapan": "pagi", "breakfast": "pagi", "sahur": "pagi",
+    "siang": "siang", "lunch": "siang", "maksi": "siang", 
+    "sore": "sore", "ngemil": "sore", "senja": "sore",
+    "malam": "malam", "dinner": "malam", "buka puasa": "malam",
+    "malem": "malam"
   }
 }
