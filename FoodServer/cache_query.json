@@ -64,5 +64,50 @@
       "goreng",
       "kering"
     ]
+  },
+  "bisa|cocok|flu|kasih|meredakan": {
+    "bahan": [
+      "jahe",
+      "ayam"
+    ],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "Siang",
+    "sifat": [
+      "kuah",
+      "hangat"
+    ]
+  },
+  "ytzeruer": {
+    "bahan": [],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "",
+    "waktu": "",
+    "sifat": []
+  },
+  "cocok|hujan|makanan|pas": {
+    "bahan": [
+      "mie",
+      "bakmi",
+      "ayam"
+    ],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "Siang",
+    "sifat": [
+      "kuah",
+      "hangat"
+    ]
+  },
+  "cocok|di|makanan|pagi": {
+    "bahan": [],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "Pagi",
+    "sifat": []
   }
 }
