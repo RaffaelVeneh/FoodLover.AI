@@ -151,9 +151,10 @@ namespace FoodLover {
 
 	private: List<FoodLover::Menu^>^ databaseMenu;
 	private: System::Windows::Forms::Button^ btnFeedback;
-private: System::Windows::Forms::TreeView^ treeViewHasil;
-private: System::Windows::Forms::ComboBox^ comboKategori;
-private: System::Windows::Forms::Label^ labelKategori;
+	private: System::Windows::Forms::TreeView^ treeViewHasil;
+	private: System::Windows::Forms::ComboBox^ comboKategori;
+	private: System::Windows::Forms::Label^ labelKategori;
+	private: System::Windows::Forms::Label^ lblStatus;
 
 	protected:
 
@@ -179,6 +180,7 @@ private: System::Windows::Forms::Label^ labelKategori;
 			this->treeViewHasil = (gcnew System::Windows::Forms::TreeView());
 			this->comboKategori = (gcnew System::Windows::Forms::ComboBox());
 			this->labelKategori = (gcnew System::Windows::Forms::Label());
+			this->lblStatus = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
 			// labelRasa
@@ -267,11 +269,23 @@ private: System::Windows::Forms::Label^ labelKategori;
 			this->labelKategori->TabIndex = 9;
 			this->labelKategori->Text = L"Kategori:";
 			// 
+			// lblStatus
+			// 
+			this->lblStatus->AutoSize = true;
+			this->lblStatus->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Italic, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->lblStatus->ForeColor = System::Drawing::Color::Blue;
+			this->lblStatus->Location = System::Drawing::Point(384, 240);
+			this->lblStatus->Name = L"lblStatus";
+			this->lblStatus->Size = System::Drawing::Size(0, 13);
+			this->lblStatus->TabIndex = 0;
+			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(598, 606);
+			this->Controls->Add(this->lblStatus);
 			this->Controls->Add(this->labelKategori);
 			this->Controls->Add(this->comboKategori);
 			this->Controls->Add(this->treeViewHasil);
@@ -304,47 +318,72 @@ private: System::Windows::Forms::Label^ labelKategori;
 		}
 	}
 	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
-
-		this->treeViewHasil->Nodes->Clear();
-		this->treeViewHasil->BeginUpdate();
-
 		String^ rasaInput = this->comboRasa->Text;
 		String^ bahanMentah = this->txtBahan->Text;
 		String^ kategoriInput = this->comboKategori->Text;
 
-		if (String::IsNullOrEmpty(rasaInput)) { this->treeViewHasil->EndUpdate(); return; }
+		if (String::IsNullOrEmpty(rasaInput)) return;
+		this->lblStatus->Text = "AI sedang mencari rekomendasi untukmu...";
+		this->lblStatus->ForeColor = Color::Blue;
+		this->btnCari->Enabled = false;
+		this->treeViewHasil->Nodes->Clear(); 
+		this->Cursor = Cursors::WaitCursor;  
 
 		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
 		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\", \"kategori\": \"" + kategoriInput + "\" }";
 
 		String^ url = "http://127.0.0.1:5000/cari";
-		String^ responseServer = "";
 
 		try {
 			WebClient^ client = gcnew WebClient();
 			client->Headers->Add("Content-Type", "application/json");
 			client->Encoding = System::Text::Encoding::UTF8;
-			responseServer = client->UploadString(url, "POST", jsonKirim);
+			client->UploadStringCompleted += gcnew UploadStringCompletedEventHandler(this, &MainForm::OnPencarianSelesai);
+			client->UploadStringAsync(gcnew Uri(url), "POST", jsonKirim);
 		}
 		catch (Exception^ ex) {
-			MessageBox::Show("Gagal terhubung ke server AI: " + ex->Message);
+			MessageBox::Show("Gagal memulai koneksi: " + ex->Message);
+			this->lblStatus->Text = "";
+			this->btnCari->Enabled = true;
+			this->Cursor = Cursors::Default;
+		}
+	}
+	private: void OnPencarianSelesai(Object^ sender, UploadStringCompletedEventArgs^ e)
+	{
+		// KEMBALIKAN STATUS UI
+		this->btnCari->Enabled = true;
+		this->Cursor = Cursors::Default;
+		this->treeViewHasil->BeginUpdate();
+
+		// CEK ERROR DARI SERVER
+		if (e->Error != nullptr) {
+			this->lblStatus->Text = "Gagal terhubung ke AI.";
+			this->lblStatus->ForeColor = Color::Red;
+			MessageBox::Show("Error Server: " + e->Error->Message);
 			this->treeViewHasil->EndUpdate();
 			return;
 		}
 
+		// RESULT
+		String^ responseServer = e->Result;
+
+		// Update label jadi sukses
+		this->lblStatus->Text = "Rekomendasi ditemukan!";
+		this->lblStatus->ForeColor = Color::Green;
+
+		// PARSING JSON
 		try {
+			String^ rasaInput = this->comboRasa->Text;
+
 			JArray^ dataArray = JArray::Parse(responseServer);
 
 			if (dataArray->Count == 0) {
 				this->treeViewHasil->Nodes->Add("Tidak ada data.");
-				this->treeViewHasil->EndUpdate();
-				return;
 			}
 
 			bool pesanDitampilkan = false;
 
 			for each (JObject ^ menu in dataArray) {
-
 				String^ namaMenu = (String^)menu["nama"];
 				String^ skor = menu["skor"]->ToString();
 				String^ rasaMenu = (String^)menu["rasa"];
@@ -357,7 +396,6 @@ private: System::Windows::Forms::Label^ labelKategori;
 				String^ metaKategori = (String^)menu["meta_kategori"];
 				String^ metaSifat = (String^)menu["meta_sifat"];
 
-				// --- LOGIKA UI (Visualisasi) ---
 				if (!pesanDitampilkan && !String::IsNullOrEmpty(pesanSistem)) {
 					TreeNode^ nodePesan = gcnew TreeNode(pesanSistem);
 					nodePesan->ForeColor = Color::Red;
@@ -368,8 +406,6 @@ private: System::Windows::Forms::Label^ labelKategori;
 
 				if (!String::IsNullOrEmpty(namaMenu)) {
 					String^ labelNode = namaMenu;
-
-					// Hanya tampilkan skor kecocokan jika bukan hasil random (skor > 0)
 					if (skor != "0") {
 						labelNode += " (" + skor + " Cocok";
 						if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
@@ -380,13 +416,10 @@ private: System::Windows::Forms::Label^ labelKategori;
 					}
 
 					TreeNode^ parentNode = gcnew TreeNode();
-
-					// Cek apakah ini Rekomendasi AI (Hybrid)
 					if (labelAi == "YA") {
 						parentNode->Text = "[REKOMENDASI AI] " + labelNode;
 						parentNode->ForeColor = Color::DarkViolet;
 						parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
-						// Auto expand rekomendasi AI agar user langsung lihat
 						parentNode->Expand();
 					}
 					else {
@@ -397,21 +430,16 @@ private: System::Windows::Forms::Label^ labelKategori;
 
 					TreeNode^ metaNode = gcnew TreeNode("Info & Konteks");
 					metaNode->ForeColor = Color::DarkMagenta;
-
 					metaNode->Nodes->Add("Kategori: " + metaKategori);
 					metaNode->Nodes->Add("Waktu: " + (metaWaktu != nullptr ? metaWaktu->Replace("|", ", ") : "-"));
 					metaNode->Nodes->Add("Sifat: " + (metaSifat != nullptr ? metaSifat->Replace("|", ", ") : "-"));
 					parentNode->Nodes->Add(metaNode);
 
 					TreeNode^ bahanNode = gcnew TreeNode("Rincian Bahan");
-
 					if (!String::IsNullOrEmpty(bahanLengkapStr)) {
 						array<String^>^ listBahan = bahanLengkapStr->Split('|');
 						for each (String ^ bahan in listBahan) {
 							TreeNode^ childNode = gcnew TreeNode();
-
-							// Highlight bahan yang user miliki (Match)
-							// Kita cek apakah string bahanMatchStr mengandung bahan ini
 							if (bahanMatchStr != nullptr && bahanMatchStr->Contains(bahan) && skor != "0") {
 								childNode->Text = "v " + bahan;
 								childNode->ForeColor = Color::Green;
@@ -425,14 +453,12 @@ private: System::Windows::Forms::Label^ labelKategori;
 						}
 					}
 					parentNode->Nodes->Add(bahanNode);
-
-					// Masukkan ke TreeView Utama
 					this->treeViewHasil->Nodes->Add(parentNode);
 				}
 			}
 		}
 		catch (Exception^ ex) {
-			MessageBox::Show("Error saat membaca data dari AI: " + ex->Message, "Parsing Error");
+			MessageBox::Show("Error Parsing: " + ex->Message);
 		}
 
 		this->treeViewHasil->EndUpdate();
