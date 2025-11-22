@@ -320,8 +320,10 @@ def latih_ulang_otak():
     history = muat_json(NAMA_FILE_LOG)
     df_history = pd.DataFrame()
     
+    data_hist = []
+    
     if isinstance(history, list) and len(history) > 0:
-        data_hist = []
+        sekarang = datetime.now()
         for h in history:
             # Kita konversi format history agar sama dengan format training
             # Input user di history string "nasi, telur", harus diubah jadi list ['nasi', 'telur']
@@ -331,11 +333,33 @@ def latih_ulang_otak():
             # Abaikan jika input kosong
             if not list_input: continue
                 
-            data_hist.append({
+            jumlah_ulangan = 1
+            
+            try:
+                tgl_str = h.get('timestamp') # Contoh: "2025-11-21 09:24:47"
+                if tgl_str:
+                    waktu_akses = datetime.strptime(tgl_str, "%Y-%m-%d %H:%M:%S")
+                    selisih_hari = (sekarang - waktu_akses).days
+                    
+                    if selisih_hari < 1:     # Data Hari Ini (Sangat Relevan)
+                        jumlah_ulangan = 5   # Pelajari 5 kali!
+                    elif selisih_hari < 3:   # Data 3 Hari Terakhir
+                        jumlah_ulangan = 3   # Pelajari 3 kali
+                    elif selisih_hari < 7:   # Data Seminggu Terakhir
+                        jumlah_ulangan = 2   # Pelajari 2 kali
+                    elif selisih_hari > 30:  # Data > Sebulan
+                         jumlah_ulangan = 1
+            except Exception as e:
+                jumlah_ulangan = 1
+
+            record = {
                 "bahan_input": list_input,
-                "waktu": h.get('waktu_akses', 'siang'), # Ambil konteks waktu asli user
-                "target_nama": h.get('menu_dipilih')    # Ini kunci! AI belajar pilihan user
-            })
+                "waktu": h.get('waktu_akses', 'siang'),
+                "target_nama": h.get('menu_dipilih')
+            }
+            
+            for _ in range(jumlah_ulangan):
+                data_hist.append(record)
         
         if data_hist:
             df_history = pd.DataFrame(data_hist)
