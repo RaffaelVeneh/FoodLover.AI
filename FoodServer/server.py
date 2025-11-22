@@ -386,6 +386,59 @@ def analisa_bahasa_natural(teks_user):
         print(f"[LLM ERROR] {e}")
         return None
     
+def cek_perlu_llm(teks_raw):
+    """
+    Menentukan apakah input user butuh pemahaman AI atau cukup keyword matching.
+    True = Butuh LLM (Kompleks)
+    False = Cukup Lokal (Simple)
+    """
+    if not teks_raw: return False
+    
+    teks_bersih = normalisasi_alay(teks_raw)
+    kata_kata = [k.strip() for k in re.split(r'[,\.\s\n]+', teks_bersih) if k]
+    
+    db_menu = muat_json(NAMA_FILE_DB)
+    vocab_bahan = set()
+    for menu in db_menu:
+        for b in menu.get('bahan', []):
+            vocab_bahan.add(b.lower())
+            
+    vocab_rasa = set([k.lower() for k in KEYWORDS_RASA.keys()])
+    vocab_kategori = set([k.lower() for k in KEYWORDS_KATEGORI.keys()])
+    vocab_kamus = set([k.lower() for k in CACHE_KAMUS.keys()]) # kata asal (misal: 'endog')
+    
+    skor_asing = 0
+    kata_asing = []
+    
+    for kata in kata_kata:
+        if kata in STOPWORDS: continue
+        
+        # Cek apakah kata ini dikenali sebagai entity database?
+        is_known = (
+            kata in vocab_bahan or 
+            kata in vocab_rasa or 
+            kata in vocab_kategori or
+            kata in vocab_kamus or
+            kata in BAHAN_POKOK
+        )
+        
+        if not is_known:
+            # Jika kata tidak dikenal (misal: "flu", "anget", "diet", "malam"), hitung!
+            # Pengecualian: angka/tanda baca
+            if not kata.isdigit() and len(kata) > 1:
+                skor_asing += 1
+                kata_asing.append(kata)
+
+    # Jika ada lebih dari 0 kata asing yang bermakna, gunakan LLM untuk memahaminya.
+    # Contoh: "Ayam pedas" -> Asing 0 -> Local
+    # Contoh: "Ayam buat orang sakit" -> Asing 2 (buat, sakit) -> LLM
+    if skor_asing > 0:
+        print(f"[ROUTER] Terdeteksi konteks kompleks ({kata_asing}) -> Switch to LLM.")
+        return True
+    else:
+        print(f"[ROUTER] Input simple/to-the-point -> Switch to Local Logic.")
+        return False
+    
 # --- ROUTES ---
 @app.route('/cari', methods=['POST'])
 def cari_resep():
@@ -401,7 +454,9 @@ def cari_resep():
     pakai_logika_lama = True
     
     # --- PROSES LLM ---
-    if len(raw_input.split()) > 1:
+    butuh_llm = cek_perlu_llm(raw_input)
+    
+    if butuh_llm:
         print(f"[AI] Menganalisa konteks: '{raw_input}'...")
         hasil_analisa = analisa_bahasa_natural(raw_input)
         
@@ -420,7 +475,6 @@ def cari_resep():
                 target_kategori = hasil_analisa['kategori']
             if hasil_analisa.get('sifat'):
                 target_sifat = [s.lower() for s in hasil_analisa['sifat']]
-            
             if hasil_analisa.get('exclude_rasa'):
                 exclude_rasa = hasil_analisa['exclude_rasa']
 
