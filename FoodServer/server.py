@@ -375,16 +375,50 @@ def latih_ulang_otak():
     
     return f"Berhasil dilatih dengan {len(df_final)} data (Base + History)."
 
+def buat_fingerprint_semantik(teks_raw):
+    """
+    Mengubah kalimat bebas menjadi kumpulan keyword standar yang terurut.
+    Contoh: "Enaknya sarapan apa ya?" -> "pagi"
+    """
+    teks = normalisasi_alay(teks_raw)
+    
+    kata_kata = [k.strip() for k in re.split(r'[,\.\s\n\?]+', teks) if k]
+    sampah_extra = {"kira-kira", "dong", "sih", "nih", "tuh", "ya", "apa", "enak", "enaknya", "rekomendasi"}
+    
+    kata_penting = set()
+    
+    for k in kata_kata:
+        k_lower = k.lower()
+        
+        if k_lower in STOPWORDS or k_lower in sampah_extra:
+            continue
+            
+        if k_lower in KEYWORDS_WAKTU:
+            kata_penting.add(KEYWORDS_WAKTU[k_lower]) 
+        elif k_lower in KEYWORDS_RASA:
+            kata_penting.add(KEYWORDS_RASA[k_lower])
+        elif k_lower in KEYWORDS_KATEGORI:
+            kata_penting.add(KEYWORDS_KATEGORI[k_lower])
+        elif k_lower in CACHE_KAMUS:
+             kata_penting.add(CACHE_KAMUS[k_lower]) # 
+        else:
+            kata_penting.add(k_lower)
+            
+    fingerprint = "|".join(sorted(list(kata_penting)))
+    
+    return fingerprint
+
 def analisa_bahasa_natural(teks_user):
     if not USE_LLM: return None
 
-    kunci_cache = normalisasi_alay(teks_user).strip()
+    kunci_cache = buat_fingerprint_semantik(teks_user)
+    if not kunci_cache: kunci_cache = teks_user.strip().lower()
+    
     if kunci_cache in CACHE_QUERY:
-        print(f"[CACHE] HORE! Menemukan ingatan lama untuk: '{teks_user}'")
         print(f"[CACHE] Menggunakan data: {CACHE_QUERY[kunci_cache]}")
         return CACHE_QUERY[kunci_cache]
     
-    print(f"[AI] Query baru, sedang berpikir keras untuk: '{teks_user}'...")
+    print(f"[AI] Konteks baru ('{kunci_cache}'), memanggil LLM...")
     
     # Prompt System: Menginstruksikan LLM cara bekerja
     system_prompt = f"""
