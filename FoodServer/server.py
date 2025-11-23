@@ -88,6 +88,28 @@ def simpan_database(data):
     with open(NAMA_FILE_DB, 'w') as f:
         json.dump(data, f, indent=2)
 
+def get_valid_menu_names():
+    db = muat_json(NAMA_FILE_DB)
+    return {m['nama'] for m in db}
+
+def is_safe_text(teks, max_len=200):
+    """
+    Mengecek apakah teks aman untuk disimpan.
+    1. Tidak boleh kosong atau None.
+    2. Tidak boleh terlalu panjang (Anti-Buffer Overflow/Spam).
+    3. Tidak boleh mengandung karakter kontrol aneh (Basic Sanity).
+    """
+    if not teks or not isinstance(teks, str):
+        return False
+    
+    if len(teks) > max_len:
+        return False
+        
+    if "{" in teks or "}" in teks or "<script>" in teks:
+        return False
+        
+    return True
+
 def normalisasi_alay(teks):
     if not teks: return ""
     teks_bersih = teks.lower()
@@ -892,21 +914,42 @@ def trigger_training():
 @app.route('/catat-pilihan', methods=['POST'])
 def catat_pilihan():
     data = request.get_json()
+    
+    input_user = data.get('input_user')
+    menu_dipilih = data.get('menu_dipilih')
+    
+    if not is_safe_text(input_user) or not is_safe_text(menu_dipilih):
+        print(f"[SECURITY] Input ditolak (Unsafe/Spam): {input_user} -> {menu_dipilih}")
+        return jsonify({"status": "gagal", "pesan": "Input tidak valid/terlalu panjang"}), 400
+    
+    valid_menus = get_valid_menu_names()
+    
+    nama_bersih = menu_dipilih.replace("[REKOMENDASI AI] ", "").strip()
+    if nama_bersih not in valid_menus:
+        print(f"[SECURITY] Percobaan poisoning terdeteksi! Menu '{nama_bersih}' tidak dikenal.")
+        return jsonify({"status": "gagal", "pesan": "Menu tidak ditemukan di database"}), 400
+    
     record_baru = {
-        "input_user": data.get('input_user'),
-        "rasa_dipilih": data.get('rasa_input'),
-        "menu_dipilih": data.get('menu_dipilih'),
-        "waktu_akses": data.get('waktu_akses'),
-        "timestamp": data.get('timestamp')
+        "input_user": input_user[:200],
+        "rasa_dipilih": data.get('rasa_input', 'Semua'),
+        "menu_dipilih": nama_bersih,
+        "waktu_akses": data.get('waktu_akses', 'siang'),
+        "timestamp": data.get('timestamp', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     }
     
     history = muat_json(NAMA_FILE_LOG)
     if not isinstance(history, list): history = []
     
     history.append(record_baru)
-    with open(NAMA_FILE_LOG, 'w') as f:
-        json.dump(history, f, indent=2)
-    return jsonify({"status": "sukses"})
+    
+    try:
+        with open(NAMA_FILE_LOG, 'w') as f:
+            json.dump(history, f, indent=2)
+        print(f"[LOG] Berhasil mencatat pilihan user: {nama_bersih}")
+        return jsonify({"status": "sukses"})
+    except Exception as e:
+        print(f"[ERROR] Gagal menulis log: {e}")
+        return jsonify({"status": "error server"}), 500
 
 @app.route('/tambah', methods=['POST'])
 def tambah_resep():
