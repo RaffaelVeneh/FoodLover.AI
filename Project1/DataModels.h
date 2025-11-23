@@ -16,16 +16,4 @@ namespace FoodLover {
             bahan = listBahan;
         }
     };
-
-    public ref class HasilPencarian {
-    public:
-        String^ namaMenu;
-        int skorKecocokan;
-
-        HasilPencarian(String^ nama, int skor) {
-            namaMenu = nama;
-            skorKecocokan = skor;
-        }
-    };
-
 }

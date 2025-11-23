@@ -30,11 +30,6 @@ namespace FoodLover {
 		MainForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
-			InisialisasiDatabase();
-			MuatFeedbackDariFile();
 
 			this->comboRasa->SelectedIndex = 0;
 			this->comboKategori->SelectedIndex = 0;
@@ -51,91 +46,22 @@ namespace FoodLover {
 				delete components;
 			}
 		}
-	private:
-		// Malas hapus, ini inisialisasi database manual
-		void InisialisasiDatabase()
-		{
-			databaseMenu = gcnew List<FoodLover::Menu^>();
-			List<String^>^ bahanNasiGoreng = gcnew List<String^>();
-			bahanNasiGoreng->Add("nasi");
-			bahanNasiGoreng->Add("telur");
-			bahanNasiGoreng->Add("kecap");
-			bahanNasiGoreng->Add("cabai");
-			databaseMenu->Add(gcnew FoodLover::Menu("Nasi Goreng Pedas", "Pedas", bahanNasiGoreng));
-
-			List<String^>^ bahanTelurDadar = gcnew List<String^>();
-			bahanTelurDadar->Add("telur");
-			bahanTelurDadar->Add("garam");
-			bahanTelurDadar->Add("daun bawang");
-			databaseMenu->Add(gcnew FoodLover::Menu("Telur Dadar Gurih", "Gurih", bahanTelurDadar));
-
-			List<String^>^ bahanPisangGoreng = gcnew List<String^>();
-			bahanPisangGoreng->Add("pisang");
-			bahanPisangGoreng->Add("tepung");
-			bahanPisangGoreng->Add("gula");
-			databaseMenu->Add(gcnew FoodLover::Menu("Pisang Goreng Manis", "Manis", bahanPisangGoreng));
-
-			List<String^>^ bahanRica = gcnew List<String^>();
-			bahanRica->Add("ayam");
-			bahanRica->Add("cabai");
-			bahanRica->Add("bawang");
-			databaseMenu->Add(gcnew FoodLover::Menu("Ayam Rica-Rica", "Pedas", bahanRica));
-		}
-	private:
-		void MuatFeedbackDariFile()
-		{
-			String^ namaFile = "feedback.txt";
-			if (!File::Exists(namaFile)) {
-				return;
-			}
-
-			array<String^>^ semuaBaris = File::ReadAllLines(namaFile);
-
-			String^ menuBerikutnya = nullptr;
-			String^ rasaBerikutnya = nullptr;
-			String^ bahanBerikutnya = nullptr;
-
-			for each (String ^ baris in semuaBaris)
-			{
-				if (baris->StartsWith("Nama Menu: ")) {
-					menuBerikutnya = baris->Substring(11)->Trim();
-				}
-				else if (baris->StartsWith("Rasa: ")) {
-					rasaBerikutnya = baris->Substring(6)->Trim();
-				}
-				else if (baris->StartsWith("Bahan: ")) {
-					bahanBerikutnya = baris->Substring(7)->Trim();
-				}
-
-				// Cek jika SEMUA data sudah terkumpul
-				if (menuBerikutnya != nullptr && rasaBerikutnya != nullptr && bahanBerikutnya != nullptr)
-				{
-					List<String^>^ listBahan = gcnew List<String^>();
-					array<String^>^ bahanArray = bahanBerikutnya->Split(',');
-
-					for each (String ^ b in bahanArray) {
-						// Kita tetap 'Trim' untuk jaga-jaga
-						listBahan->Add(b->Trim());
-					}
-
-					databaseMenu->Add(gcnew FoodLover::Menu(menuBerikutnya,
-						rasaBerikutnya, 
-						listBahan));
-
-					menuBerikutnya = nullptr;
-					rasaBerikutnya = nullptr;
-					bahanBerikutnya = nullptr;
-				}
-			}
-		}
 	private: 
 		void OnTrainingSelesai(Object^ sender, DownloadStringCompletedEventArgs^ e) 
 		{
 			if (e->Error == nullptr) {
-				// Sukses
 				Console::WriteLine("Info: AI telah selesai dilatih ulang di background.");
+
+				this->lblStatus->Text = "AI Siap.";
+				this->lblStatus->ForeColor = Color::Green;
+			}
+			else {
+				Console::WriteLine("Error Training: " + e->Error->Message);
+
+				this->lblStatus->Text = "Gagal terhubung dengan Neural Network";
+				this->lblStatus->ForeColor = Color::Red;
+			}
 		}
-	}
 	private: System::Windows::Forms::Label^ labelRasa;
 	protected:
 
@@ -149,7 +75,6 @@ namespace FoodLover {
 
 	private: System::Windows::Forms::TextBox^ txtBahan;
 
-	private: List<FoodLover::Menu^>^ databaseMenu;
 	private: System::Windows::Forms::Button^ btnFeedback;
 	private: System::Windows::Forms::TreeView^ treeViewHasil;
 	private: System::Windows::Forms::ComboBox^ comboKategori;
@@ -312,9 +237,12 @@ namespace FoodLover {
 
 			client->DownloadStringCompleted += gcnew DownloadStringCompletedEventHandler(this, &MainForm::OnTrainingSelesai);
 			client->DownloadStringAsync(gcnew Uri(url));
+			this->lblStatus->Text = "Menghubungkan ke Neural Network...";
 		}
 		catch (Exception^ ex) {
 			Console::WriteLine("Gagal memicu auto-training: " + ex->Message);
+			this->lblStatus->Text = "Offline Mode (Server disconnect)";
+			this->lblStatus->ForeColor = Color::Red;
 		}
 	}
 	private: System::Void btnCari_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -322,7 +250,10 @@ namespace FoodLover {
 		String^ bahanMentah = this->txtBahan->Text;
 		String^ kategoriInput = this->comboKategori->Text;
 
-		if (String::IsNullOrEmpty(rasaInput)) return;
+		if (String::IsNullOrWhiteSpace(bahanMentah)) {
+			MessageBox::Show("Mohon masukkan bahan atau keinginanmu terlebih dahulu.", "Input Kosong");
+			return;
+		}
 		this->lblStatus->Text = "AI sedang mencari rekomendasi untukmu...";
 		this->lblStatus->ForeColor = Color::Blue;
 		this->btnCari->Enabled = false;
@@ -406,7 +337,11 @@ namespace FoodLover {
 
 				if (!String::IsNullOrEmpty(namaMenu)) {
 					String^ labelNode = namaMenu;
-					if (skor != "0") {
+
+					double skorVal = 0;
+					Double::TryParse(skor, skorVal);
+
+					if (skorVal > 0) {
 						labelNode += " (" + skor + " Cocok";
 						if (rasaInput == "Semua") labelNode += ", Rasa: " + rasaMenu;
 						labelNode += ")";
@@ -420,7 +355,6 @@ namespace FoodLover {
 						parentNode->Text = "[REKOMENDASI AI] " + labelNode;
 						parentNode->ForeColor = Color::DarkViolet;
 						parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
-						parentNode->Expand();
 					}
 					else {
 						parentNode->Text = labelNode;
@@ -428,9 +362,10 @@ namespace FoodLover {
 						parentNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
 					}
 
-					TreeNode^ metaNode = gcnew TreeNode("Info & Konteks");
+					TreeNode^ metaNode = gcnew TreeNode("Info Detil");
 					metaNode->ForeColor = Color::DarkMagenta;
 					metaNode->Nodes->Add("Kategori: " + metaKategori);
+					metaNode->Nodes->Add("Rasa: " + rasaMenu);
 					metaNode->Nodes->Add("Waktu: " + (metaWaktu != nullptr ? metaWaktu->Replace("|", ", ") : "-"));
 					metaNode->Nodes->Add("Sifat: " + (metaSifat != nullptr ? metaSifat->Replace("|", ", ") : "-"));
 					parentNode->Nodes->Add(metaNode);
@@ -440,7 +375,7 @@ namespace FoodLover {
 						array<String^>^ listBahan = bahanLengkapStr->Split('|');
 						for each (String ^ bahan in listBahan) {
 							TreeNode^ childNode = gcnew TreeNode();
-							if (bahanMatchStr != nullptr && bahanMatchStr->Contains(bahan) && skor != "0") {
+							if (bahanMatchStr != nullptr && bahanMatchStr->Contains(bahan) && skorVal > 0) {
 								childNode->Text = "v " + bahan;
 								childNode->ForeColor = Color::Green;
 								childNode->NodeFont = gcnew System::Drawing::Font(this->treeViewHasil->Font, FontStyle::Bold);
@@ -465,7 +400,6 @@ namespace FoodLover {
 	}
 	private: System::Void btnFeedback_Click(System::Object^ sender, System::EventArgs^ e) {
 		FeedbackForm^ form = gcnew FeedbackForm();
-
 		form->ShowDialog();
 	}
 	private: System::Void treeViewHasil_NodeMouseDoubleClick(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e) {
@@ -477,7 +411,12 @@ namespace FoodLover {
 		int indexKurung = teksNode->IndexOf("(");
 		if (indexKurung < 0) return;
 
-		String^ namaMenuFix = teksNode->Substring(0, indexKurung)->Trim();
+		String^ namaMenuFix = teksNode;
+
+		if (indexKurung > 0) {
+			namaMenuFix = namaMenuFix->Substring(0, indexKurung)->Trim();
+		}
+
 		String^ inputBahan = this->txtBahan->Text->Replace("\n", " ")->Replace("\"", "");
 		String^ rasaInput = this->comboRasa->Text;
 

@@ -360,65 +360,77 @@ def latih_ulang_otak():
     data_hist = []
     
     if isinstance(history, list) and len(history) > 0:
-        sekarang = datetime.now()
-        for h in history:
-            # Kita konversi format history agar sama dengan format training
-            # Input user di history string "nasi, telur", harus diubah jadi list ['nasi', 'telur']
-            raw_input = h.get('input_user', '')
-            list_input = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
-            
-            # Abaikan jika input kosong
-            if not list_input: continue
-                
-            jumlah_ulangan = 1
-            
+        sekarang = datetime.datetime.now()
+        for i, h in enumerate(history):
             try:
-                tgl_str = h.get('timestamp') # Contoh: "2025-11-21 09:24:47"
-                if tgl_str:
-                    waktu_akses = datetime.strptime(tgl_str, "%Y-%m-%d %H:%M:%S")
-                    selisih_hari = (sekarang - waktu_akses).days
-                    
-                    if selisih_hari < 1:     # Data Hari Ini (Sangat Relevan)
-                        jumlah_ulangan = 5   # Pelajari 5 kali!
-                    elif selisih_hari < 3:   # Data 3 Hari Terakhir
-                        jumlah_ulangan = 3   # Pelajari 3 kali
-                    elif selisih_hari < 7:   # Data Seminggu Terakhir
-                        jumlah_ulangan = 2   # Pelajari 2 kali
-                    elif selisih_hari > 30:  # Data > Sebulan
-                         jumlah_ulangan = 1
-            except Exception as e:
-                jumlah_ulangan = 1
+                raw_input = h.get('input_user')
+                if raw_input is None: raw_input = ""
+                
+                list_input = [x.strip().lower() for x in re.split(r'[,\.\s\n]+', raw_input) if x]
+                if not list_input: continue
+                
+                menu_raw = h.get('menu_dipilih', '')
+                menu_clean = menu_raw.replace("[REKOMENDASI AI]", "").replace("?", "").strip()
+                if "(" in menu_clean:
+                    menu_clean = menu_clean.split("(")[0].strip()
 
-            rasa_hist = h.get('rasa_dipilih', 'Semua')
-            if rasa_hist == "Semua": 
+                menu_valid = False
+                rasa_hist = "Semua"
+                
+                found_in_db = False
                 for m in db_resep:
-                    if m['nama'] == h.get('menu_dipilih'):
-                        rasa_hist = m.get('rasa', 'Umum'); break
+                    if m['nama'].lower() == menu_clean.lower():
+                        rasa_hist = m.get('rasa', 'Umum')
+                        menu_clean = m['nama']
+                        found_in_db = True
+                        break
+                
+                if not found_in_db:
+                    continue
+
+                # Bobot Waktu (Recency)
+                jumlah_ulangan = 1
+                tgl_str = h.get('timestamp')
+                if tgl_str:
+                    try:
+                        waktu_akses = datetime.datetime.strptime(tgl_str, "%Y-%m-%d %H:%M:%S")
+                        selisih_hari = (sekarang - waktu_akses).days
+                        if selisih_hari < 1: jumlah_ulangan = 5
+                        elif selisih_hari < 3: jumlah_ulangan = 3
+                        elif selisih_hari < 7: jumlah_ulangan = 2
+                        elif selisih_hari < 30: jumlah_ulangan = 1
+                    except: pass 
+
+                record = {
+                    "bahan_input": list_input,
+                    "waktu": h.get('waktu_akses', 'siang').lower(),
+                    "rasa_input": rasa_hist,
+                    "target_nama": menu_clean
+                }
+                
+                for _ in range(jumlah_ulangan):
+                    data_hist.append(record)
             
-            record = {
-                "bahan_input": list_input,
-                "waktu": h.get('waktu_akses', 'siang'),
-                "rasa_input": rasa_hist,
-                "target_nama": h.get('menu_dipilih')
-            }
-            
-            for _ in range(jumlah_ulangan):
-                data_hist.append(record)
+            except Exception as e_row:
+                print(f"[WARNING] Data history baris ke-{i} rusak, di-skip: {e_row}")
+                continue
         
         if data_hist:
             df_history = pd.DataFrame(data_hist)
-            print(f"[TRAINING] Ditemukan {len(df_history)} data pengalaman baru dari user.")
+            print(f"[TRAINING] Ditemukan {len(df_history)} data pengalaman valid dari user.")
+        else:
+            print("[TRAINING] History ada tapi tidak ada data yang valid untuk dipelajari.")
     
-    # 3. GABUNGKAN (Masa Lalu + Masa Kini)
-    # Kita beri bobot lebih pada history? Untuk sekarang kita gabung biasa dulu.
+    # 3. GABUNGKAN
     if not df_history.empty:
         df_final = pd.concat([df_base, df_history], ignore_index=True)
     else:
         df_final = df_base
         
-    # 4. PROSES VECTORIZATION (Sama seperti otak_ai.py)
-    print("[TRAINING] Membangun Vocabulary Statis...")
+    # 4. PROSES VECTORIZATION
+    print("[TRAINING] Membangun Vocabulary & Training...")
     
+    # Encode Bahan
     master_vocab_bahan = set()
     for menu in db_resep:
         for b in menu.get('bahan', []):
@@ -427,16 +439,14 @@ def latih_ulang_otak():
     mlb = MultiLabelBinarizer()
     mlb.fit([list(master_vocab_bahan)])
     
-    try:
-        X_bahan = mlb.transform(df_final['bahan_input'])
-    except Exception as e:
-        print(f"[WARNING] Error transform bahan: {e}. Re-fitting fallback.")
-        X_bahan = mlb.fit_transform(df_final['bahan_input'])
+    # Transformasi aman untuk bahan
+    X_bahan = mlb.transform(df_final['bahan_input'])
     
+    # Encode Waktu
     map_waktu = {'pagi': 0, 'siang': 1, 'sore': 2, 'malam': 3}
-    # Handle data kotor/missing pada waktu
     X_waktu = df_final['waktu'].map(map_waktu).fillna(1).values.reshape(-1, 1)
     
+    # Encode Rasa
     master_vocab_rasa = set(KEYWORDS_RASA.values())
     for menu in db_resep:
         if menu.get('rasa'): master_vocab_rasa.add(menu['rasa'])
@@ -452,27 +462,26 @@ def latih_ulang_otak():
         
     X_rasa = mlb_rasa.transform(rasa_list_final)
     
-    # Gabungkan semua fitur
+    # Gabung
     X_train = np.hstack((X_bahan, X_waktu, X_rasa))
     y_train = df_final['target_nama']
     
-    # 5. LATIH NEURAL NETWORK
-    # Kita gunakan parameter warm_start=False agar dia belajar dari nol gabungan data
+    # 5. LATIH
     model = MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=500, random_state=42)
     model.fit(X_train, y_train)
     
-    # 6. SIMPAN & UPDATE MEMORI AKTIF
+    # 6. SIMPAN
     joblib.dump(model, NAMA_FILE_MODEL)
     joblib.dump(mlb, NAMA_FILE_ENCODER)
     joblib.dump(mlb_rasa, NAMA_FILE_ENCODER_RASA)
     
-    # Update variabel global agar server langsung pintar tanpa restart
+    # Update Memory
     OTAK_AI = model
     ENCODER_AI = mlb
     ENCODER_RASA = mlb_rasa
     VOCAB_AI = set(mlb.classes_)
     
-    return f"Berhasil dilatih dengan {len(df_final)} data (Base + History)."
+    return f"Sukses! AI belajar dari {len(df_final)} pola (Base + History)."
 
 def cek_gibberish(kata):
     if len(kata) > 20: return True
