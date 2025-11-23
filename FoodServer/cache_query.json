@@ -125,5 +125,15 @@
     "kategori": "",
     "waktu": "",
     "sifat": []
+  },
+  "bebek": {
+    "bahan": [
+      "bebek"
+    ],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "Makanan",
+    "waktu": "",
+    "sifat": []
   }
 }
