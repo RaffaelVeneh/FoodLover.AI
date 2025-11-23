@@ -116,14 +116,19 @@ def tanya_ai(list_bahan, waktu_sekarang_str, rasa_user="Semua"):
     X_waktu = np.array([[kode_waktu]])
 
     # Vectorization Rasa
-    if rasa_user == "Semua": rasa_user = "Umum"
-    if rasa_user not in ENCODER_RASA.classes_:
-        rasa_user = "Umum"
-    X_rasa = ENCODER_RASA.transform([[rasa_user]])
-    
+    if rasa_user == "Semua": 
+        jumlah_rasa = len(ENCODER_RASA.classes_)
+        X_rasa = np.zeros((1, jumlah_rasa))
+    else:
+        if rasa_user not in ENCODER_RASA.classes_:
+            jumlah_rasa = len(ENCODER_RASA.classes_)
+            X_rasa = np.zeros((1, jumlah_rasa))
+        else:
+            X_rasa = ENCODER_RASA.transform([[rasa_user]])
+            
     # Gabungkan (Stack)
-    X_final = np.hstack((X_bahan, X_waktu))
-
+    X_final = np.hstack((X_bahan, X_waktu, X_rasa))
+    
     # Prediksi!
     try:
         hasil_prediksi = OTAK_AI.predict(X_final)[0]
