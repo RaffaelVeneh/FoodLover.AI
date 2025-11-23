@@ -22,6 +22,7 @@ NAMA_FILE_KAMUS = 'kamus.json'
 NAMA_FILE_LOG = 'history.json'
 NAMA_FILE_MODEL = 'model_cerdas.pkl'
 NAMA_FILE_ENCODER = 'encoder_bahan.pkl'
+NAMA_FILE_ENCODER_RASA = 'encoder_rasa.pkl'
 NAMA_FILE_CONFIG_NLP = 'config_nlp.json'
 NAMA_FILE_CACHE_QUERY = 'cache_query.json'
 
@@ -73,13 +74,14 @@ CACHE_KAMUS = muat_json(NAMA_FILE_KAMUS)
 try:
     OTAK_AI = joblib.load(NAMA_FILE_MODEL)
     ENCODER_AI = joblib.load(NAMA_FILE_ENCODER)
-    # Ambil daftar kata yang dipelajari AI untuk validasi input
+    ENCODER_RASA = joblib.load(NAMA_FILE_ENCODER_RASA)
     VOCAB_AI = set(ENCODER_AI.classes_) 
     print("[INFO] Otak AI & Encoder berhasil dimuat!")
 except Exception as e:
     print(f"[WARNING] Gagal memuat AI: {e}. Fitur prediksi akan dimatikan.")
     OTAK_AI = None
     ENCODER_AI = None
+    ENCODER_RASA = None
     VOCAB_AI = set()
 
 def simpan_database(data):
@@ -96,35 +98,39 @@ def normalisasi_alay(teks):
     return teks_bersih
 
 # --- FUNGSI PREDIKSI AI ---
-def tanya_ai(list_bahan, waktu_sekarang_str):
-    if OTAK_AI is None or ENCODER_AI is None:
+def tanya_ai(list_bahan, waktu_sekarang_str, rasa_user="Semua"):
+    if OTAK_AI is None or ENCODER_AI is None or ENCODER_RASA is None:
         return None
-
-    # 1. Filter bahan: AI hanya mengerti bahan yang pernah dia pelajari
     bahan_valid = [b for b in list_bahan if b in VOCAB_AI]
     
     if not bahan_valid:
         return None # Tidak ada bahan yang dikenali AI
 
-    # 2. Vectorization Bahan (Encode)
+    # Vectorization Bahan (Encode)
     # Mengubah ["nasi", "telur"] menjadi [[1, 0, 1, ...]]
     X_bahan = ENCODER_AI.transform([bahan_valid])
 
-    # 3. Vectorization Waktu
+    # Vectorization Waktu
     map_waktu = {'pagi': 0, 'siang': 1, 'sore': 2, 'malam': 3}
     kode_waktu = map_waktu.get(waktu_sekarang_str, 1) # Default siang (1)
     X_waktu = np.array([[kode_waktu]])
 
-    # 4. Gabungkan (Stack)
+    # Vectorization Rasa
+    if rasa_user == "Semua": rasa_user = "Umum"
+    if rasa_user not in ENCODER_RASA.classes_:
+        rasa_user = "Umum"
+    X_rasa = ENCODER_RASA.transform([[rasa_user]])
+    
+    # Gabungkan (Stack)
     X_final = np.hstack((X_bahan, X_waktu))
 
-    # 5. Prediksi!
+    # Prediksi!
     try:
         hasil_prediksi = OTAK_AI.predict(X_final)[0]
         # Cek tingkat keyakinan (Probability)
         proba = np.max(OTAK_AI.predict_proba(X_final))
         
-        if proba > 0.4: # Hanya sarankan jika AI yakin > 40%
+        if proba > 0.3: # Hanya sarankan jika AI yakin > 30%
             return f"{hasil_prediksi} (AI Confidence: {int(proba*100)}%)"
     except:
         pass
@@ -301,15 +307,18 @@ def generate_base_knowledge(database, jumlah=500):
         waktu_sim = random.choice(meta_waktu)
         if waktu_sim == 'kapanpun': waktu_sim = random.choice(['pagi', 'siang', 'malam'])
         
+        rasa_menu = target_resep.get('rasa', 'Umum')
+        
         dataset.append({
             "bahan_input": input_user,
             "waktu": waktu_sim,
+            "rasa_input": rasa_menu,
             "target_nama": target_resep['nama']
         })
     return pd.DataFrame(dataset)
 
 def latih_ulang_otak():
-    global OTAK_AI, ENCODER_AI, VOCAB_AI
+    global OTAK_AI, ENCODER_AI, VOCAB_AI, ENCODER_RASA
     
     print("[TRAINING] Memulai proses belajar ulang...")
     
@@ -353,9 +362,16 @@ def latih_ulang_otak():
             except Exception as e:
                 jumlah_ulangan = 1
 
+            rasa_hist = h.get('rasa_dipilih', 'Semua')
+            if rasa_hist == "Semua": 
+                for m in db_resep:
+                    if m['nama'] == h.get('menu_dipilih'):
+                        rasa_hist = m.get('rasa', 'Umum'); break
+            
             record = {
                 "bahan_input": list_input,
                 "waktu": h.get('waktu_akses', 'siang'),
+                "rasa_input": rasa_hist,
                 "target_nama": h.get('menu_dipilih')
             }
             
@@ -381,7 +397,11 @@ def latih_ulang_otak():
     # Handle data kotor/missing pada waktu
     X_waktu = df_final['waktu'].map(map_waktu).fillna(1).values.reshape(-1, 1)
     
-    X_train = np.hstack((X_bahan, X_waktu))
+    mlb_rasa = MultiLabelBinarizer()
+    rasa_list = [[r] for r in df_final['rasa_input']]
+    X_rasa = mlb_rasa.fit_transform(rasa_list)
+    
+    X_train = np.hstack((X_bahan, X_waktu, X_rasa))
     y_train = df_final['target_nama']
     
     # 5. LATIH NEURAL NETWORK
@@ -392,10 +412,12 @@ def latih_ulang_otak():
     # 6. SIMPAN & UPDATE MEMORI AKTIF
     joblib.dump(model, NAMA_FILE_MODEL)
     joblib.dump(mlb, NAMA_FILE_ENCODER)
+    joblib.dump(mlb_rasa, NAMA_FILE_ENCODER_RASA)
     
     # Update variabel global agar server langsung pintar tanpa restart
     OTAK_AI = model
     ENCODER_AI = mlb
+    ENCODER_RASA = mlb_rasa
     VOCAB_AI = set(mlb.classes_)
     
     return f"Berhasil dilatih dengan {len(df_final)} data (Base + History)."
@@ -752,7 +774,7 @@ def cari_resep():
     for b in list_bahan_user:
         if b in BAHAN_POKOK: user_staples.add(b)
 
-    ai_suggestion = tanya_ai(list_bahan_user, waktu_server)
+    ai_suggestion = tanya_ai(list_bahan_user, waktu_server, target_rasa)
     hasil_sementara = []
     
     for menu in database_menu:
