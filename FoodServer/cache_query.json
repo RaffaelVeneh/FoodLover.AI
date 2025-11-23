@@ -109,5 +109,13 @@
     "kategori": "Makanan",
     "waktu": "Pagi",
     "sifat": []
+  },
+  "rfewrf": {
+    "bahan": [],
+    "rasa": "Semua",
+    "exclude_rasa": "",
+    "kategori": "",
+    "waktu": "",
+    "sifat": []
   }
 }

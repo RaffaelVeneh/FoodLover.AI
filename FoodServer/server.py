@@ -400,44 +400,113 @@ def latih_ulang_otak():
     
     return f"Berhasil dilatih dengan {len(df_final)} data (Base + History)."
 
-def buat_fingerprint_semantik(teks_raw):
-    """
-    Mengubah kalimat bebas menjadi kumpulan keyword standar yang terurut.
-    Contoh: "Enaknya sarapan apa ya?" -> "pagi"
-    """
+def cek_gibberish(kata):
+    if len(kata) > 20: return True
+    if not re.search(r'[aeiouy]', kata): return True # Gak ada vokal
+    if re.search(r'(.)\1{2,}', kata): return True # Ada huruf diulang 3x (aaapa)
+    return False
+
+def smart_filter_input(teks_raw):
+    if not teks_raw: return "GIBBERISH", ""
+    
+    # Normalisasi
     teks = normalisasi_alay(teks_raw)
-    
     kata_kata = [k.strip() for k in re.split(r'[,\.\s\n\?]+', teks) if k]
-    sampah_extra = {"kira-kira", "dong", "sih", "nih", "tuh", "ya", "apa", "enak", "enaknya", "rekomendasi"}
+
+    # gabung semua knowledge base menjadi satu set besar
+    vocab_known = set()
+    vocab_known.update(KEYWORDS_RASA.keys())
+    vocab_known.update(KEYWORDS_KATEGORI.keys()) 
+    vocab_known.update(KEYWORDS_WAKTU.keys()) 
+    vocab_known.update(CACHE_KAMUS.keys())  
+    vocab_known.update(BAHAN_POKOK)      
+    if VOCAB_AI: vocab_known.update(VOCAB_AI)    
     
-    kata_penting = set()
+    anchors_found = []      
+    potential_context = []  
     
     for k in kata_kata:
         k_lower = k.lower()
+        if k_lower in STOPWORDS: continue
         
-        if k_lower in STOPWORDS or k_lower in sampah_extra:
-            continue
-            
-        if k_lower in KEYWORDS_WAKTU:
-            kata_penting.add(KEYWORDS_WAKTU[k_lower]) 
-        elif k_lower in KEYWORDS_RASA:
-            kata_penting.add(KEYWORDS_RASA[k_lower])
-        elif k_lower in KEYWORDS_KATEGORI:
-            kata_penting.add(KEYWORDS_KATEGORI[k_lower])
-        elif k_lower in CACHE_KAMUS:
-             kata_penting.add(CACHE_KAMUS[k_lower]) # 
+        # Cek Anchor
+        if k_lower in vocab_known or k_lower in KEYWORDS_RASA.values():
+            anchors_found.append(k_lower)
         else:
-            kata_penting.add(k_lower)
-            
-    fingerprint = "|".join(sorted(list(kata_penting)))
+            if not cek_gibberish(k_lower):
+                potential_context.append(k_lower) 
     
-    return fingerprint
+    # --- DECISION LOGIC ---
+    # SKENARIO 1: Anchor Dominant ("fhshdfd nasi")
+    if anchors_found:
+        input_bersih = " ".join(anchors_found)
+        print(f"[SMART FILTER] Anchor ditemukan: '{input_bersih}'. Mengabaikan sampah/konteks lain.")
+        return "LOCAL", input_bersih
+        
+    # SKENARIO 2: Context Only ("sakit flu", "diet")
+    if potential_context:
+        print(f"[SMART FILTER] Konteks terdeteksi tanpa anchor: {potential_context}. Pass ke LLM.")
+        return "LLM", teks_raw
+        
+    # SKENARIO 3: Total Gibberish ("sjdjfoidsj")
+    print(f"[SMART FILTER] Input sampah terdeteksi: '{teks_raw}'. Reject.")
+    return "GIBBERISH", ""
+
+def buat_fingerprint_semantik(teks_raw):
+    teks = normalisasi_alay(teks_raw)
+    
+    kata_kata = [k.strip() for k in re.split(r'[,\.\s\n\?]+', teks) if k]
+    vocab_known = set()
+    vocab_known.update(KEYWORDS_RASA.keys())
+    vocab_known.update(KEYWORDS_KATEGORI.keys())
+    vocab_known.update(KEYWORDS_WAKTU.keys())
+    vocab_known.update(CACHE_KAMUS.keys())
+    vocab_known.update(BAHAN_POKOK)
+    if VOCAB_AI: vocab_known.update(VOCAB_AI) 
+    
+    sampah_extra = {"kira-kira", "dong", "sih", "nih", "tuh", "ya", "apa", "enak", "enaknya", "rekomendasi", "pengen", "mau"}
+    
+    list_valid = []     
+    list_potensial = [] 
+    
+    for k in kata_kata:
+        k_lower = k.lower()
+        if k_lower in STOPWORDS or k_lower in sampah_extra: continue
+        
+        if k_lower in vocab_known or k_lower in KEYWORDS_RASA.values() or k_lower in KEYWORDS_KATEGORI.values():
+            if k_lower in KEYWORDS_WAKTU: final_word = KEYWORDS_WAKTU[k_lower]
+            elif k_lower in KEYWORDS_RASA: final_word = KEYWORDS_RASA[k_lower]
+            elif k_lower in KEYWORDS_KATEGORI: final_word = KEYWORDS_KATEGORI[k_lower]
+            elif k_lower in CACHE_KAMUS: final_word = CACHE_KAMUS[k_lower]
+            else: final_word = k_lower
+            
+            list_valid.append(final_word)
+        else:
+            if not cek_gibberish(k_lower):
+                list_potensial.append(k_lower)
+    
+    # --- SMART FILTER ---
+    # KONDISI 1: Ada Anchor (Kata Valid)
+    # Contoh: "fhshdfd nasi" -> "nasi"
+    # Jika kita menemukan minimal 1 kata valid, kita ABAIKAN semua kata potensial/asing.
+    # Asumsinya: User typo atau ngetik sampah di sekitar kata kunci utama.
+    if list_valid:
+        return "|".join(sorted(set(list_valid)))
+        
+    # KONDISI 2: Tidak Ada Anchor, Tapi Ada Kata Potensial
+    if list_potensial:
+        return "|".join(sorted(set(list_potensial)))
+        
+    # KONDISI 3: Semua Sampah / Gibberish
+    return None
 
 def analisa_bahasa_natural(teks_user):
     if not USE_LLM: return None
 
     kunci_cache = buat_fingerprint_semantik(teks_user)
-    if not kunci_cache: kunci_cache = teks_user.strip().lower()
+    if not kunci_cache:
+        print(f"[AI] Terdeteksi input tidak bermakna/gibberish: '{teks_user}'. Skip LLM.")
+        return None
     
     if kunci_cache in CACHE_QUERY:
         print(f"[CACHE] Menggunakan data: {CACHE_QUERY[kunci_cache]}")
@@ -580,6 +649,20 @@ def cari_resep():
     butuh_llm = cek_perlu_llm(raw_input)
     pake_llm_sukses = False
     
+    aksi, data_bersih = smart_filter_input(raw_input)
+    if aksi == "GIBBERISH":
+        return jsonify(get_personalized_recommendations(
+            muat_json(NAMA_FILE_DB), 10, target_kategori, target_rasa, 
+            pesan_khusus="Maaf, saya tidak mengerti inputmu. Coba masukkan nama bahan makanan yang jelas."
+        ))
+
+    elif aksi == "LOCAL":
+        raw_input = data_bersih 
+        butuh_llm = False 
+        
+    elif aksi == "LLM":
+        butuh_llm = True
+        
     if butuh_llm:
         print(f"[AI] Menganalisa konteks: '{raw_input}'...")
         hasil_analisa = analisa_bahasa_natural(raw_input)
