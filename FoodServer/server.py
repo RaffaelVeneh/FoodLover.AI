@@ -417,17 +417,42 @@ def latih_ulang_otak():
         df_final = df_base
         
     # 4. PROSES VECTORIZATION (Sama seperti otak_ai.py)
+    print("[TRAINING] Membangun Vocabulary Statis...")
+    
+    master_vocab_bahan = set()
+    for menu in db_resep:
+        for b in menu.get('bahan', []):
+            master_vocab_bahan.add(b.lower())
+            
     mlb = MultiLabelBinarizer()
-    X_bahan = mlb.fit_transform(df_final['bahan_input'])
+    mlb.fit([list(master_vocab_bahan)])
+    
+    try:
+        X_bahan = mlb.transform(df_final['bahan_input'])
+    except Exception as e:
+        print(f"[WARNING] Error transform bahan: {e}. Re-fitting fallback.")
+        X_bahan = mlb.fit_transform(df_final['bahan_input'])
     
     map_waktu = {'pagi': 0, 'siang': 1, 'sore': 2, 'malam': 3}
     # Handle data kotor/missing pada waktu
     X_waktu = df_final['waktu'].map(map_waktu).fillna(1).values.reshape(-1, 1)
     
+    master_vocab_rasa = set(KEYWORDS_RASA.values())
+    for menu in db_resep:
+        if menu.get('rasa'): master_vocab_rasa.add(menu['rasa'])
+        
     mlb_rasa = MultiLabelBinarizer()
-    rasa_list = [[r] for r in df_final['rasa_input']]
-    X_rasa = mlb_rasa.fit_transform(rasa_list)
+    mlb_rasa.fit([list(master_vocab_rasa)])
     
+    rasa_list_final = []
+    for r in df_final['rasa_input']:
+        if isinstance(r, str): rasa_list_final.append([r])
+        elif isinstance(r, list): rasa_list_final.append(r)
+        else: rasa_list_final.append(['Umum'])
+        
+    X_rasa = mlb_rasa.transform(rasa_list_final)
+    
+    # Gabungkan semua fitur
     X_train = np.hstack((X_bahan, X_waktu, X_rasa))
     y_train = df_final['target_nama']
     
