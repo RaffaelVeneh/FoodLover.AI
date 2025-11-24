@@ -490,7 +490,8 @@ def cek_gibberish(kata):
     return False
 
 def smart_filter_input(teks_raw):
-    if not teks_raw: return "GIBBERISH", ""
+    if not teks_raw or not teks_raw.strip(): 
+        return "LOCAL", ""
     
     # Normalisasi
     teks = normalisasi_alay(teks_raw)

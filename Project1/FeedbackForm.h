@@ -1,4 +1,5 @@
 #pragma once
+#include "ApiService.h"
 
 namespace FoodLover {
 
@@ -16,6 +17,8 @@ namespace FoodLover {
 	/// </summary>
 	public ref class FeedbackForm : public System::Windows::Forms::Form
 	{
+	private:
+		ApiService^ apiService;
 	public:
 		FeedbackForm(void)
 		{
@@ -23,6 +26,11 @@ namespace FoodLover {
 			//
 			//TODO: Add the constructor code here
 			//
+			this->apiService = gcnew ApiService();
+
+			this->comboRasaFeedback->SelectedIndex = 0;
+			this->comboKategoriMenu->SelectedIndex = 0;
+			this->comboWaktuMenu->SelectedIndex = 3;
 		}
 
 	protected:
@@ -52,10 +60,6 @@ namespace FoodLover {
 	private: System::Windows::Forms::Label^ label1;
 	private: System::Windows::Forms::Label^ label2;
 	private: System::Windows::Forms::Label^ label3;
-
-
-
-
 
 	private:
 		/// <summary>
@@ -251,43 +255,21 @@ namespace FoodLover {
 			return;
 		}
 
-		// 3. SANITASI INPUT
-		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
-		String^ namaAman = namaMenu->Replace("\"", "");
-
-		// 4. BENTUK JSON LENGKAP
-		// Kita kirim field tambahan: 'kategori' dan 'waktu'
-		String^ jsonKirim = String::Format(
-			"{{"
-			"\"nama\": \"{0}\", "
-			"\"rasa\": \"{1}\", "
-			"\"bahan\": \"{2}\", "
-			"\"kategori\": \"{3}\", "
-			"\"waktu\": \"{4}\""
-			"}}",
-			namaAman, rasa, bahanAman, kategori, waktu
-		);
-
-		// 5. KIRIM KE SERVER
-		String^ url = "http://127.0.0.1:5000/tambah";
-
+		this->Cursor = Cursors::WaitCursor;
 		try {
-			WebClient^ client = gcnew WebClient();
-			client->Headers->Add("Content-Type", "application/json");
+			// Parameter terakhir nullptr karena kita menggunakan Sync Upload (Tunggu sampai selesai)
+			apiService->TambahResep(namaMenu, rasa, bahanMentah, kategori, waktu, nullptr);
 
-			// Gunakan Encoding UTF8 agar karakter khusus aman
-			client->Encoding = System::Text::Encoding::UTF8;
-
-			// Kirim!
-			String^ respon = client->UploadString(url, "POST", jsonKirim);
-
-			MessageBox::Show("Terima kasih! Resep baru telah ditambahkan ke database dan dipelajari AI.",
+			MessageBox::Show("Terima kasih! Resep baru telah ditambahkan ke database.",
 				"Sukses", MessageBoxButtons::OK, MessageBoxIcon::Information);
 			this->Close();
 		}
 		catch (Exception^ ex) {
 			MessageBox::Show("Gagal terhubung ke server: " + ex->Message,
 				"Error Server", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+		finally {
+			this->Cursor = Cursors::Default;
 		}
 	}
 	private: System::Void btnBatal_Click(System::Object^ sender, System::EventArgs^ e) {

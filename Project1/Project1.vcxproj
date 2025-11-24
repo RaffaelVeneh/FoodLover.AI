@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ApiService.h" />
     <ClInclude Include="DataModels.h" />
     <ClInclude Include="FeedbackForm.h">
       <FileType>CppForm</FileType>

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "DataModels.h"
 #include "FeedbackForm.h"
+#include "ApiService.h"
 using namespace System::IO;
 using namespace System::Net;
 using namespace System::Text;
@@ -26,6 +27,9 @@ namespace FoodLover {
 	/// </summary>
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
+	private:
+		ApiService^ apiService;
+
 	public:
 		MainForm(void)
 		{
@@ -33,6 +37,7 @@ namespace FoodLover {
 
 			this->comboRasa->SelectedIndex = 0;
 			this->comboKategori->SelectedIndex = 0;
+			this->apiService = gcnew ApiService();
 		}
 
 	protected:
@@ -50,7 +55,7 @@ namespace FoodLover {
 		void OnTrainingSelesai(Object^ sender, DownloadStringCompletedEventArgs^ e) 
 		{
 			if (e->Error == nullptr) {
-				Console::WriteLine("Info: AI telah selesai dilatih ulang di background.");
+				Console::WriteLine("Info: AI telah selesai dilatih ulang.");
 
 				this->lblStatus->Text = "AI Siap.";
 				this->lblStatus->ForeColor = Color::Green;
@@ -232,12 +237,8 @@ namespace FoodLover {
 	}
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) {
 		try {
-			String^ url = "http://127.0.0.1:5000/latih-ulang";
-			WebClient^ client = gcnew WebClient();
-
-			client->DownloadStringCompleted += gcnew DownloadStringCompletedEventHandler(this, &MainForm::OnTrainingSelesai);
-			client->DownloadStringAsync(gcnew Uri(url));
 			this->lblStatus->Text = "Menghubungkan ke Neural Network...";
+			apiService->LatihAi(gcnew DownloadStringCompletedEventHandler(this, &MainForm::OnTrainingSelesai));
 		}
 		catch (Exception^ ex) {
 			Console::WriteLine("Gagal memicu auto-training: " + ex->Message);
@@ -250,34 +251,18 @@ namespace FoodLover {
 		String^ bahanMentah = this->txtBahan->Text;
 		String^ kategoriInput = this->comboKategori->Text;
 
-		if (String::IsNullOrWhiteSpace(bahanMentah)) {
-			MessageBox::Show("Mohon masukkan bahan atau keinginanmu terlebih dahulu.", "Input Kosong");
-			return;
-		}
 		this->lblStatus->Text = "AI sedang mencari rekomendasi untukmu...";
 		this->lblStatus->ForeColor = Color::Blue;
 		this->btnCari->Enabled = false;
 		this->treeViewHasil->Nodes->Clear(); 
 		this->Cursor = Cursors::WaitCursor;  
 
-		String^ bahanAman = bahanMentah->Replace("\r\n", " ")->Replace("\n", " ")->Replace("\"", "");
-		String^ jsonKirim = "{ \"bahan\": \"" + bahanAman + "\", \"rasa\": \"" + rasaInput + "\", \"kategori\": \"" + kategoriInput + "\" }";
-
-		String^ url = "http://127.0.0.1:5000/cari";
-
-		try {
-			WebClient^ client = gcnew WebClient();
-			client->Headers->Add("Content-Type", "application/json");
-			client->Encoding = System::Text::Encoding::UTF8;
-			client->UploadStringCompleted += gcnew UploadStringCompletedEventHandler(this, &MainForm::OnPencarianSelesai);
-			client->UploadStringAsync(gcnew Uri(url), "POST", jsonKirim);
-		}
-		catch (Exception^ ex) {
-			MessageBox::Show("Gagal memulai koneksi: " + ex->Message);
-			this->lblStatus->Text = "";
-			this->btnCari->Enabled = true;
-			this->Cursor = Cursors::Default;
-		}
+		apiService->CariResep(
+			bahanMentah,
+			rasaInput,
+			kategoriInput,
+			gcnew UploadStringCompletedEventHandler(this, &MainForm::OnPencarianSelesai)
+		);
 	}
 	private: void OnPencarianSelesai(Object^ sender, UploadStringCompletedEventArgs^ e)
 	{
@@ -295,10 +280,7 @@ namespace FoodLover {
 			return;
 		}
 
-		// RESULT
 		String^ responseServer = e->Result;
-
-		// Update label jadi sukses
 		this->lblStatus->Text = "Rekomendasi ditemukan!";
 		this->lblStatus->ForeColor = Color::Green;
 
@@ -309,7 +291,7 @@ namespace FoodLover {
 			JArray^ dataArray = JArray::Parse(responseServer);
 
 			if (dataArray->Count == 0) {
-				this->treeViewHasil->Nodes->Add("Tidak ada data.");
+				JArray^ dataArray = JArray::Parse(responseServer);
 			}
 
 			bool pesanDitampilkan = false;
@@ -411,43 +393,15 @@ namespace FoodLover {
 		int indexKurung = teksNode->IndexOf("(");
 		if (indexKurung < 0) return;
 
-		String^ namaMenuFix = teksNode;
-
-		if (indexKurung > 0) {
-			namaMenuFix = namaMenuFix->Substring(0, indexKurung)->Trim();
-		}
+		String^ namaMenuFix = teksNode->Substring(0, indexKurung)->Trim();
+		namaMenuFix = namaMenuFix->Replace("[REKOMENDASI AI]", "")->Trim();
 
 		String^ inputBahan = this->txtBahan->Text->Replace("\n", " ")->Replace("\"", "");
 		String^ rasaInput = this->comboRasa->Text;
 
-		int jam = DateTime::Now.Hour;
-		String^ waktuSekarang = "malam";
-		if (jam >= 5 && jam < 11) waktuSekarang = "pagi";
-		else if (jam >= 11 && jam < 15) waktuSekarang = "siang";
-		else if (jam >= 15 && jam < 19) waktuSekarang = "sore";
+		apiService->CatatPilihan(inputBahan, rasaInput, namaMenuFix);
 
-		String^ jsonLog = String::Format(
-			"{{"
-			"\"input_user\": \"{0}\", "
-			"\"rasa_input\": \"{1}\", "
-			"\"menu_dipilih\": \"{2}\", "
-			"\"waktu_akses\": \"{3}\", "
-			"\"timestamp\": \"{4}\""
-			"}}",
-			inputBahan, rasaInput, namaMenuFix, waktuSekarang, DateTime::Now.ToString("yyyy-MM-dd HH:mm:ss")
-		);
-
-		try {
-			String^ url = "http://127.0.0.1:5000/catat-pilihan";
-			WebClient^ client = gcnew WebClient();
-			client->Headers->Add("Content-Type", "application/json");
-			client->UploadStringAsync(gcnew Uri(url), "POST", jsonLog);
-
-			Console::WriteLine("Log terkirim untuk: " + namaMenuFix);
-		}
-		catch (Exception^ ex) {
-			Console::WriteLine("Gagal log: " + ex->Message);
-		}
+		Console::WriteLine("Log dikirim untuk: " + namaMenuFix);
 	}
 };
 }
